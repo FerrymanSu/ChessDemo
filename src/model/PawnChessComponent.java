@@ -86,6 +86,10 @@ public class PawnChessComponent extends ChessComponent {
                         && ((PawnChessComponent) chessboard[3][Y - 1]).isTwoStep()){
                     pointList.add(chessboard[2][Y - 1].getChessboardPoint());
                 }
+                if (Y < 7 && X == 3 && chessboard[3][Y + 1] instanceof PawnChessComponent
+                        && ((PawnChessComponent) chessboard[3][Y + 1]).isTwoStep()){
+                    pointList.add(chessboard[2][Y + 1].getChessboardPoint());
+                }
             }
         }
         else {
@@ -104,6 +108,14 @@ public class PawnChessComponent extends ChessComponent {
                 if (Y < 7 && !(chessboard[X + 1][Y + 1] instanceof EmptySlotComponent)
                         && chessboard[X + 1][Y + 1].getChessColor() != chessColor){
                     pointList.add(chessboard[X + 1][Y + 1].getChessboardPoint());
+                }
+                if (Y > 0 && X == 4 && chessboard[4][Y - 1] instanceof PawnChessComponent
+                        && ((PawnChessComponent) chessboard[4][Y - 1]).isTwoStep()){
+                    pointList.add(chessboard[5][Y - 1].getChessboardPoint());
+                }
+                if (Y < 7 && X == 4 && chessboard[4][Y + 1] instanceof PawnChessComponent
+                        && ((PawnChessComponent) chessboard[4][Y + 1]).isTwoStep()){
+                    pointList.add(chessboard[5][Y + 1].getChessboardPoint());
                 }
             }
         }
