@@ -8,7 +8,5 @@ public class Main {
             ChessGameFrame mainFrame = new ChessGameFrame(1000, 760);
             mainFrame.setVisible(true);
         });
-
-
     }
 }

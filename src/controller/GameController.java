@@ -28,7 +28,7 @@ public class GameController {
         this.save = false;
         DateFormat df = new SimpleDateFormat("yyyy年MM月dd日HH_mm_ss");
         this.date = df.format(new Date()).trim();
-        File file = new File("D:\\ChessDemo\\data\\"+date);
+        File file = new File(".\\data\\"+date);
         boolean flag = file.mkdir();
         System.out.println(flag ? "Successful!":"failed!");
     }
@@ -62,7 +62,7 @@ public class GameController {
 
     public void saveGameToFile(List<String> chessData) {
         BufferedWriter writer = null;
-        File file = new File("D:\\ChessDemo\\data\\"+ date +"\\" + chessboard.getRound() + ".txt");
+        File file = new File(".\\data\\"+ date +"\\" + chessboard.getRound() + ".txt");
         if(!file.exists()){
             try {
                 file.createNewFile();
@@ -91,7 +91,7 @@ public class GameController {
     }
 
     public void stepBack() {
-        File file = new File("D:\\ChessDemo\\data\\"+ date + "\\" + (chessboard.getRound() - 1) + ".txt");
+        File file = new File(".\\data\\"+ date + "\\" + (chessboard.getRound() - 1) + ".txt");
         if (file.exists()) {
             loadGameFromFile(file);
             chessboard.setRound(chessboard.getRound() - 1);
@@ -99,7 +99,7 @@ public class GameController {
     }
 
     public void stepForward() {
-        File file = new File("D:\\ChessDemo\\data\\"+ date + "\\" + (chessboard.getRound() + 1) + ".txt");
+        File file = new File(".\\data\\"+ date + "\\" + (chessboard.getRound() + 1) + ".txt");
         if (file.exists()) {
             loadGameFromFile(file);
             chessboard.setRound(chessboard.getRound() + 1);
@@ -108,7 +108,7 @@ public class GameController {
 
     public void deleteFileNotSaved(){
         if (!save) {
-            String dir = "D:\\ChessDemo\\data\\"+ date;
+            String dir = ".\\data\\"+ date;
             File dirFile = new File(dir);
             if ((!dirFile.exists()) || (!dirFile.isDirectory())) {
                 System.out.println("删除文件夹失败：" + dir + "不存在！");
@@ -147,7 +147,7 @@ public class GameController {
         JFileChooser fileChooser = new JFileChooser();
 
         // 设置默认显示的文件夹为当前文件夹
-        fileChooser.setCurrentDirectory(new File("D:\\ChessDemo\\data"));
+        fileChooser.setCurrentDirectory(new File(".\\data"));
 
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
