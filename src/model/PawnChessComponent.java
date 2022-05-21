@@ -126,6 +126,12 @@ public class PawnChessComponent extends ChessComponent {
         return pointList;
     }
 
+    public boolean checkTurn() {
+        if (chessColor == ChessColor.WHITE && this.getChessboardPoint().getX() == 0) return true;
+        else if (chessColor == ChessColor.BLACK && this.getChessboardPoint().getX() == 7) return true;
+        else return false;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

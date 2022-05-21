@@ -5,6 +5,8 @@ import model.*;
 import view.Chessboard;
 import view.ChessboardPoint;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class ClickController {
@@ -98,10 +100,35 @@ public class ClickController {
                     int Y = chessComponent.getChessboardPoint().getY();
                     chessboard.removeChessComponents(chessComponents[X][Y]);
                 }
+                if (first instanceof KingChessComponent || first instanceof RookChessComponent) {
+                    if (!first.isMove()) {
+                        first.setMove(true);
+                    }
+                }
+                if (first instanceof KingChessComponent &&
+                        Math.abs(first.getChessboardPoint().getY() - chessComponent.getChessboardPoint().getY()) >= 2){
+                    int X = first.getChessboardPoint().getX();
+                    int Y1 = first.getChessboardPoint().getY();
+                    int Y2 = chessComponent.getChessboardPoint().getY();
+                    if (Y1 > Y2) {
+                        chessboard.swapChessComponents(chessComponents[X][0],chessComponents[X][Y2 + 1]);
+                    }
+                    else {
+                        chessboard.swapChessComponents(chessComponents[X][7],chessComponents[X][Y2 - 1]);
+                    }
+                }
+
                 //repaint in swap chess method.
                 first.setSelected(false);
                 chessboard.swapChessComponents(first, chessComponent);
                 chessboard.swapColor();
+
+                if (first instanceof PawnChessComponent && ((PawnChessComponent) first).checkTurn()) {
+                    Object[] options = {"Queen", "Bishop", "Knight", "Rook"};
+                    int turn = JOptionPane.showOptionDialog(null,"请选择升变成:", "升变!",
+                            JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+                    chessboard.pawnTurn(first,turn);
+                }
 
                 for (ChessboardPoint point : points){
                     int X = point.getX();

@@ -16,6 +16,7 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
     private ChessboardPoint chessboardPoint;
     protected final ChessColor chessColor;
     protected char name;
+    private boolean move;
     private boolean selected;
     private boolean canMoved;
     private boolean skip;
@@ -28,6 +29,7 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
         setSize(size, size);
         this.chessboardPoint = chessboardPoint;
         this.chessColor = chessColor;
+        this.move = false;
         this.selected = false;
         this.canMoved = false;
         this.skip = false;
@@ -46,6 +48,14 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
 
     public ChessColor getChessColor() {
         return chessColor;
+    }
+
+    public boolean isMove() {
+        return move;
+    }
+
+    public void setMove(boolean move) {
+        this.move = move;
     }
 
     public boolean isSelected() {

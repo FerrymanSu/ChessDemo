@@ -201,6 +201,20 @@ public class Chessboard extends JComponent {
         this.checkCheckmated();
     }
 
+    public void pawnTurn (ChessComponent chess , int n) {
+        final ChessColor chessColor = chess.getChessColor();
+        final int X = chess.getChessboardPoint().getX();
+        final int Y = chess.getChessboardPoint().getY();
+        remove(chess);
+        switch (n) {
+            case 0 -> initQueenOnBoard(X,Y,chessColor);
+            case 1 -> initBishopOnBoard(X,Y,chessColor);
+            case 2 -> initKnightOnBoard(X,Y,chessColor);
+            case 3 -> initRookOnBoard(X,Y,chessColor);
+        }
+        chessComponents[X][Y].repaint();
+    }
+
     public void checkCheckmated(){
         if (currentColor == ChessColor.BLACK){
             whiteKing.setCheckmated(false);
