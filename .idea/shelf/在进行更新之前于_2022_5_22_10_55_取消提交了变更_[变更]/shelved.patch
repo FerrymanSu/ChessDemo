@@ -1,0 +1,1025 @@
+Index: .idea/.gitignore
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+--- a/.idea/.gitignore	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ /dev/null	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
+@@ -1,3 +0,0 @@
+-# 默认忽略的文件
+-/shelf/
+-/workspace.xml
+Index: src/model/ChessComponent.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package model;\r\n\r\nimport view.ChessboardPoint;\r\nimport controller.ClickController;\r\nimport javax.swing.*;\r\nimport java.awt.*;\r\nimport java.awt.event.MouseEvent;\r\nimport java.io.IOException;\r\nimport java.util.ArrayList;\r\n\r\npublic abstract class ChessComponent extends JComponent implements Cloneable{\r\n\r\n    private static final Color[] BACKGROUND_COLORS = {Color.WHITE, Color.BLACK};\r\n    private ClickController clickController;\r\n\r\n    private ChessboardPoint chessboardPoint;\r\n    protected final ChessColor chessColor;\r\n    protected char name;\r\n    private boolean selected;\r\n    private boolean canMoved;\r\n    private boolean skip;\r\n    private boolean mouseEnter;\r\n    protected ChessComponent[][] chessComponents;\r\n\r\n    protected ChessComponent(ChessboardPoint chessboardPoint, Point location, ChessColor chessColor, ClickController clickController, int size) {\r\n        enableEvents(AWTEvent.MOUSE_EVENT_MASK);\r\n        setLocation(location);\r\n        setSize(size, size);\r\n        this.chessboardPoint = chessboardPoint;\r\n        this.chessColor = chessColor;\r\n        this.selected = false;\r\n        this.canMoved = false;\r\n        this.skip = false;\r\n        this.mouseEnter = false;\r\n        this.clickController = clickController;\r\n        this.chessComponents = clickController.getChessboard().getChessComponents();\r\n    }\r\n\r\n    public ChessboardPoint getChessboardPoint() {\r\n        return chessboardPoint;\r\n    }\r\n\r\n    public void setChessboardPoint(ChessboardPoint chessboardPoint) {\r\n        this.chessboardPoint = chessboardPoint;\r\n    }\r\n\r\n    public ChessColor getChessColor() {\r\n        return chessColor;\r\n    }\r\n\r\n    public boolean isSelected() {\r\n        return selected;\r\n    }\r\n\r\n    public void setSelected(boolean selected) {\r\n        this.selected = selected;\r\n    }\r\n\r\n    public boolean isCanMoved() {\r\n        return canMoved;\r\n    }\r\n\r\n    public void setCanMoved(boolean canMoved) {\r\n        this.canMoved = canMoved;\r\n    }\r\n\r\n    public boolean isSkip() {\r\n        return skip;\r\n    }\r\n\r\n    public void setSkip(boolean skip) {\r\n        this.skip = skip;\r\n    }\r\n\r\n    public boolean isMouseEnter() {\r\n        return mouseEnter;\r\n    }\r\n\r\n\r\n\r\n    public void setMouseEnter(boolean mouseEnter) {\r\n        this.mouseEnter = mouseEnter;\r\n    }\r\n\r\n    /**\r\n     * @param another 主要用于和另外一个棋子交换位置\r\n     *                <br>\r\n     *                调用时机是在移动棋子的时候，将操控的棋子和对应的空位置棋子(EmptySlotComponent)做交换\r\n     */\r\n    public void swapLocation(ChessComponent another) {\r\n        ChessboardPoint chessboardPoint1 = getChessboardPoint(), chessboardPoint2 = another.getChessboardPoint();\r\n        Point point1 = getLocation(), point2 = another.getLocation();\r\n        setChessboardPoint(chessboardPoint2);\r\n        setLocation(point2);\r\n        another.setChessboardPoint(chessboardPoint1);\r\n        another.setLocation(point1);\r\n    }\r\n\r\n    /**\r\n     * @param e 响应鼠标监听事件\r\n     *          <br>\r\n     *          当接收到鼠标动作的时候，这个方法就会自动被调用，调用所有监听者的onClick方法，处理棋子的选中，移动等等行为。\r\n     */\r\n    @Override\r\n    protected void processMouseEvent(MouseEvent e) {\r\n        super.processMouseEvent(e);\r\n\r\n        if (e.getID() == MouseEvent.MOUSE_PRESSED) {\r\n            System.out.printf(\"Click [%d,%d]\\n\", chessboardPoint.getX(), chessboardPoint.getY());\r\n            clickController.onClick(this);\r\n        }\r\n        if (e.getID() == MouseEvent.MOUSE_ENTERED) {\r\n            setMouseEnter(true);\r\n            this.repaint();\r\n        }\r\n        if (e.getID() == MouseEvent.MOUSE_EXITED) {\r\n            setMouseEnter(false);\r\n            this.repaint();\r\n        }\r\n\r\n    }\r\n\r\n    public abstract ArrayList<ChessboardPoint> getCanMoveChess(ChessComponent[][] chessboard);\r\n\r\n    public boolean canMoveTo(ChessComponent[][] chessboard, ChessboardPoint destination){\r\n        ArrayList<ChessboardPoint> pointsList = this.getCanMoveChess(chessboard);\r\n        return pointsList.contains(destination);\r\n    }\r\n\r\n    public boolean checkAfterMove(ChessboardPoint chessboardPoint){\r\n        KingChessComponent king = null;\r\n        ChessComponent[][] chessComponents = new ChessComponent[8][8];\r\n\r\n        for (int i = 0; i < 8; i++) {\r\n            for (int j = 0; j < 8; j++) {\r\n                chessComponents[i][j] = this.chessComponents[i][j].clone();\r\n            }\r\n        }\r\n        for (ChessComponent[] Chess : chessComponents){\r\n            for (ChessComponent chess : Chess) {\r\n                if (chess instanceof KingChessComponent && chessColor == chess.getChessColor()){\r\n                    king = (KingChessComponent) chess;\r\n                    break;\r\n                }\r\n            }\r\n        }\r\n        int x1 = this.chessboardPoint.getX();\r\n        int y1 = this.chessboardPoint.getY();\r\n        ChessComponent chess1 = chessComponents[x1][y1];\r\n        int x2 = chessboardPoint.getX();\r\n        int y2 = chessboardPoint.getY();\r\n        ChessComponent chess2 = chessComponents[x2][y2];\r\n\r\n        chess1.setChessboardPoint(new ChessboardPoint(x2,y2));\r\n        chessComponents[x2][y2] = chess1;\r\n        chessComponents[x1][y1] =\r\n                new EmptySlotComponent(this.chessboardPoint, new Point(0,0), clickController, 0);\r\n        \r\n        for (ChessComponent[] Chess : chessComponents){\r\n            for (ChessComponent chess : Chess) {\r\n                if (chess.getChessColor() != chessColor) {\r\n                    chess.setSkip(true);\r\n                    ArrayList<ChessboardPoint> chessboardPoints = chess.getCanMoveChess(chessComponents);\r\n                    chess.setSkip(false);\r\n\r\n                    assert king != null;\r\n                    if (chessboardPoints.contains(king.getChessboardPoint())){\r\n                        chess1.setChessboardPoint(new ChessboardPoint(x1,y1));\r\n                        chessComponents[x1][y1] = chess1;\r\n                        chessComponents[x2][y2] = chess2;\r\n                        return true;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        chess1.setChessboardPoint(this.chessboardPoint);\r\n        chessComponents[x1][y1] = chess1;\r\n        chessComponents[x2][y2] = chess2;\r\n        return false;\r\n    }\r\n\r\n    /**\r\n     * 这个方法主要用于加载一些特定资源，如棋子图片等等。\r\n     *\r\n     * @throws IOException 如果一些资源找不到(如棋子图片路径错误)，就会抛出异常\r\n     */\r\n    public abstract void loadResource() throws IOException;\r\n\r\n    @Override\r\n    public String toString() {\r\n        return String.valueOf(this.name);\r\n    }\r\n\r\n    @Override\r\n    protected void paintComponent(Graphics g) {\r\n        super.paintComponents(g);\r\n        Color squareColor = BACKGROUND_COLORS[(chessboardPoint.getX() + chessboardPoint.getY()) % 2];\r\n        g.setColor(squareColor);\r\n        g.fillRect(0, 0, this.getWidth(), this.getHeight());\r\n        if (isMouseEnter()) {\r\n            g.setColor(Color.GREEN);\r\n            g.draw3DRect(0,0,this.getWidth(),this.getHeight(),true);\r\n            g.fill3DRect(0,0,this.getWidth(),this.getHeight(),true);\r\n        }\r\n        if (isSelected()) {\r\n            // Highlights the model if selected.\r\n            g.setColor(Color.LIGHT_GRAY);\r\n            g.drawRect(0, 0, getWidth() , getHeight());\r\n            g.fillRect(0, 0, getWidth() , getHeight());\r\n        }\r\n        if (isCanMoved()) {\r\n            g.setColor(Color.GRAY);\r\n            g.fillOval(getWidth()/3, getHeight()/3, getWidth()/3, getHeight()/3);\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public ChessComponent clone() {\r\n        try {\r\n            ChessComponent clone = (ChessComponent) super.clone();\r\n            clone.setChessboardPoint(new ChessboardPoint(chessboardPoint.getX(),chessboardPoint.getY()));\r\n            return clone;\r\n        } catch (CloneNotSupportedException e) {\r\n            throw new AssertionError();\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/model/ChessComponent.java b/src/model/ChessComponent.java
+--- a/src/model/ChessComponent.java	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/src/model/ChessComponent.java	(date 1653187877859)
+@@ -2,15 +2,18 @@
+ 
+ import view.ChessboardPoint;
+ import controller.ClickController;
++
++import javax.imageio.ImageIO;
+ import javax.swing.*;
+ import java.awt.*;
+ import java.awt.event.MouseEvent;
++import java.io.File;
+ import java.io.IOException;
+ import java.util.ArrayList;
+ 
+ public abstract class ChessComponent extends JComponent implements Cloneable{
+ 
+-    private static final Color[] BACKGROUND_COLORS = {Color.WHITE, Color.BLACK};
++    private  Color[] BACKGROUND_COLORS = {new Color(103,67,49), new Color(231,203,167)};
+     private ClickController clickController;
+ 
+     private ChessboardPoint chessboardPoint;
+@@ -22,6 +25,12 @@
+     private boolean mouseEnter;
+     protected ChessComponent[][] chessComponents;
+ 
++
++    public void setColor(Color[] color){
++        BACKGROUND_COLORS = color;
++    }
++
++
+     protected ChessComponent(ChessboardPoint chessboardPoint, Point location, ChessColor chessColor, ClickController clickController, int size) {
+         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+         setLocation(location);
+@@ -198,7 +207,7 @@
+         g.setColor(squareColor);
+         g.fillRect(0, 0, this.getWidth(), this.getHeight());
+         if (isMouseEnter()) {
+-            g.setColor(Color.GREEN);
++            g.setColor(new Color(51,201,255));
+             g.draw3DRect(0,0,this.getWidth(),this.getHeight(),true);
+             g.fill3DRect(0,0,this.getWidth(),this.getHeight(),true);
+         }
+Index: src/view/FirstView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/view/FirstView.java b/src/view/FirstView.java
+new file mode 100644
+--- /dev/null	(date 1653041094188)
++++ b/src/view/FirstView.java	(date 1653041094188)
+@@ -0,0 +1,159 @@
++package view;
++
++import com.tedu.manager.MusicPlayer;
++
++import javax.swing.*;
++import java.awt.*;
++import java.awt.event.ActionEvent;
++import java.awt.event.ActionListener;
++import java.io.IOException;
++
++public class FirstView extends JFrame implements ActionListener {
++
++    private String str;
++
++
++    public FirstView(){
++        this.setTitle("Chess");
++        this.setSize(550, 500);
++        this.setLocationRelativeTo(null);
++        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
++        this.setResizable(false);
++        this.getContentPane().setBackground(new Color(88,47,27));
++
++        /*ImageIcon icon=new ImageIcon("images/bac1.jpg");
++        //Image im=new Image(icon);
++        //将图片放入label中
++        JLabel label=new JLabel(icon);
++        //设置label的大小
++        label.setBounds(0,0,icon.getIconWidth(),icon.getIconHeight());
++        //取窗口的第二层，将label放入
++        this.getLayeredPane().add(label,Integer.MIN_VALUE);
++        //获取frame的顶层容器,并设置为透明
++        JPanel j=(JPanel)this.getContentPane();
++
++        //j.setOpaque(false);
++
++        //必须设置为透明的。否则看不到图片
++        //panel.setOpaque(false);*/
++
++
++        ImageIcon image = new ImageIcon("images/bac1.jpg");
++        Image image1 = image.getImage();
++        Image image2 = image1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
++        ImageIcon trueBack = new ImageIcon(image2);
++        JLabel jl = new JLabel(trueBack);
++        jl.setBounds(0,0, getWidth(), getHeight());
++
++        /*ImageIcon secondImage = new ImageIcon("images/标题.png");
++        Image secondImage1 = secondImage.getImage();
++        Image secondImage2 = secondImage1.getScaledInstance(100,50, Image.SCALE_FAST);
++        ImageIcon trueName = new ImageIcon(secondImage2);
++        JLabel jl1 = new JLabel(trueName);
++        jl1.setBounds(205,100, 100,50);*/
++
++        JPanel panel = new JPanel();
++        panel.setLayout(null);
++
++        JLabel name = new JLabel("Chess");
++        name.setSize(200,100);
++        name.setLocation(205, 70);
++        name.setFont(new Font("Castellar", Font.BOLD, 36));
++        name.setForeground(new Color(108, 51, 4));
++
++
++        JButton bt1 = createButton("Single-Player");
++        JButton bt2 = createButton("Two-Player");
++        JButton bt4 = createButton("Help");
++        JButton bt5 = createButton("Exit");
++
++        bt2.setBackground(new Color(213,144,89));
++
++        bt4.setSize(149, 81);
++        bt4.setBackground(new Color(213,144,89));
++
++        bt5.setSize(149, 81);
++
++        bt1.setLocation(99, 164);
++        bt1.setActionCommand("1");
++        bt1.addActionListener(this);
++
++        bt2.setLocation(279, 164);
++        bt2.setActionCommand("2");
++        bt2.addActionListener(this);
++
++
++
++        bt4.setLocation(99, 277);
++        bt4.setActionCommand("4");
++        bt4.addActionListener(this);
++
++        bt5.setLocation(279, 277);
++        bt5.setActionCommand("5");
++        bt5.addActionListener(this);
++
++        panel.add(bt1);
++        panel.add(bt2);
++
++        panel.add(bt4);
++        panel.add(bt5);
++        panel.add(name);
++        panel.add(jl);
++        //panel.add(jl1);
++
++
++        this.getContentPane().add(panel);
++
++    }
++
++    public void setStr(String str) {
++        this.str = str;
++    }
++
++    public String getStr() {
++        return str;
++    }
++
++    public JButton createButton(String text){
++        JButton btn = new JButton(text);
++        btn.setSize(new Dimension(149, 81));
++        Font font = new Font("Castellar", Font.BOLD, 13);
++        btn.setFont(font);
++        btn.setBackground(new Color(163,66,0));
++        return btn;
++    }
++
++    @Override
++    public void actionPerformed(ActionEvent e) {
++        if(e.getActionCommand().equals("1")){
++            this.setVisible(false);
++            new ChessGameFrame("images/bac1.jpg","C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav", new Color(207,109,60));
++        }else if(e.getActionCommand().equals("2")){
++            this.setVisible(false);
++            new ChessGameFrame("images/bac1.jpg","C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav", new Color(207,109,60));
++        }else if(e.getActionCommand().equals("4")){
++            new Thread() {
++                //重写run方法
++                public void run() {
++                    //构造命令
++                    String cmd = "cmd.exe /c start ";
++
++                    //构造本地文件路径或者网页URL
++                    //String file = "http://www.baidu.com";
++                    String file = "https://jingyan.baidu.com/article/11c17a2c775262f446e39ddc.html";
++
++                    try {
++                        //执行操作
++                        Runtime.getRuntime().exec(cmd + file);
++                    } catch (IOException ignore) {
++                        //打印异常
++                        ignore.printStackTrace();
++                    }
++                }
++            }.start();//启动线程
++        }
++        else {
++            System.exit(0);
++        }
++    }
++}
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectModuleManager\">\r\n    <modules>\r\n      <module fileurl=\"file://$PROJECT_DIR$/ChessDemo.iml\" filepath=\"$PROJECT_DIR$/ChessDemo.iml\" />\r\n    </modules>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+--- a/.idea/modules.xml	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/.idea/modules.xml	(date 1653103421657)
+@@ -3,6 +3,7 @@
+   <component name="ProjectModuleManager">
+     <modules>
+       <module fileurl="file://$PROJECT_DIR$/ChessDemo.iml" filepath="$PROJECT_DIR$/ChessDemo.iml" />
++      <module fileurl="file://$USER_HOME$/Desktop/proj/proj.iml" filepath="$USER_HOME$/Desktop/proj/proj.iml" />
+     </modules>
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+new file mode 100644
+--- /dev/null	(date 1653112961194)
++++ b/.idea/workspace.xml	(date 1653112961194)
+@@ -0,0 +1,104 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="AutoImportSettings">
++    <option name="autoReloadType" value="SELECTIVE" />
++  </component>
++  <component name="ChangeListManager">
++    <list default="true" id="d48bc99d-f5be-46c8-91d2-d457e0ab2e5f" name="变更" comment="">
++      <change afterPath="$PROJECT_DIR$/.idea/libraries/jlayer_1_0_1.xml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/com/tedu/manager/MusicPlayer.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/model/ChessComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/model/ChessComponent.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/view/ChessGameFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/ChessGameFrame.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/view/Chessboard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/Chessboard.java" afterDir="false" />
++    </list>
++    <option name="SHOW_DIALOG" value="false" />
++    <option name="HIGHLIGHT_CONFLICTS" value="true" />
++    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
++    <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="FileTemplateManagerImpl">
++    <option name="RECENT_TEMPLATES">
++      <list>
++        <option value="Class" />
++      </list>
++    </option>
++  </component>
++  <component name="Git.Settings">
++    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++  </component>
++  <component name="GitSEFilterConfiguration">
++    <file-type-list>
++      <filtered-out-file-type name="LOCAL_BRANCH" />
++      <filtered-out-file-type name="REMOTE_BRANCH" />
++      <filtered-out-file-type name="TAG" />
++      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
++    </file-type-list>
++  </component>
++  <component name="MarkdownSettingsMigration">
++    <option name="stateVersion" value="1" />
++  </component>
++  <component name="ProjectId" id="29Q4n14XPhmuMObgVxhkGkYktZQ" />
++  <component name="ProjectViewState">
++    <option name="autoscrollFromSource" value="true" />
++    <option name="hideEmptyMiddlePackages" value="true" />
++    <option name="showLibraryContents" value="true" />
++  </component>
++  <component name="PropertiesComponent">
++    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
++    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
++    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
++    <property name="last_opened_file_path" value="$USER_HOME$/Desktop/proj" />
++  </component>
++  <component name="RunManager">
++    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
++      <option name="MAIN_CLASS_NAME" value="Main" />
++      <module name="ChessDemo" />
++      <method v="2">
++        <option name="Make" enabled="true" />
++      </method>
++    </configuration>
++    <recent_temporary>
++      <list>
++        <item itemvalue="应用程序.Main" />
++      </list>
++    </recent_temporary>
++  </component>
++  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
++  <component name="TaskManager">
++    <task active="true" id="Default" summary="默认任务">
++      <changelist id="d48bc99d-f5be-46c8-91d2-d457e0ab2e5f" name="变更" comment="" />
++      <created>1653032170246</created>
++      <option name="number" value="Default" />
++      <option name="presentableId" value="Default" />
++      <updated>1653032170246</updated>
++    </task>
++    <servers />
++  </component>
++  <component name="Vcs.Log.Tabs.Properties">
++    <option name="TAB_STATES">
++      <map>
++        <entry key="MAIN">
++          <value>
++            <State />
++          </value>
++        </entry>
++      </map>
++    </option>
++  </component>
++  <component name="XDebuggerManager">
++    <breakpoint-manager>
++      <breakpoints>
++        <line-breakpoint enabled="true" type="java-line">
++          <url>file://$USER_HOME$/Desktop/proj/src/view/Chessboard.java</url>
++          <line>242</line>
++          <option name="timeStamp" value="3" />
++        </line-breakpoint>
++      </breakpoints>
++    </breakpoint-manager>
++  </component>
++</project>
+\ No newline at end of file
+Index: src/Main.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import view.ChessGameFrame;\r\n\r\nimport javax.swing.*;\r\n\r\npublic class Main {\r\n    public static void main(String[] args) {\r\n        SwingUtilities.invokeLater(() -> {\r\n            ChessGameFrame mainFrame = new ChessGameFrame(1000, 760);\r\n            mainFrame.setVisible(true);\r\n        });\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Main.java b/src/Main.java
+--- a/src/Main.java	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/src/Main.java	(date 1653041094181)
+@@ -1,12 +1,15 @@
+ import view.ChessGameFrame;
++import view.FirstView;
+ 
+ import javax.swing.*;
+ 
+ public class Main {
+     public static void main(String[] args) {
+-        SwingUtilities.invokeLater(() -> {
++        /*SwingUtilities.invokeLater(() -> {
+             ChessGameFrame mainFrame = new ChessGameFrame(1000, 760);
+             mainFrame.setVisible(true);
+-        });
++        });*/
++        FirstView firstView = new FirstView();
++        firstView.setVisible(true);
+     }
+ }
+Index: src/com/tedu/manager/MusicPlayer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/com/tedu/manager/MusicPlayer.java b/src/com/tedu/manager/MusicPlayer.java
+new file mode 100644
+--- /dev/null	(date 1653039365180)
++++ b/src/com/tedu/manager/MusicPlayer.java	(date 1653039365180)
+@@ -0,0 +1,153 @@
++package com.tedu.manager;
++
++import java.io.BufferedInputStream;
++import java.io.File;
++import java.io.FileInputStream;
++import java.io.IOException;
++import java.util.Scanner;
++
++import javax.sound.sampled.AudioFormat;
++import javax.sound.sampled.AudioInputStream;
++import javax.sound.sampled.AudioSystem;
++import javax.sound.sampled.Control;
++import javax.sound.sampled.FloatControl;
++import javax.sound.sampled.LineUnavailableException;
++import javax.sound.sampled.SourceDataLine;
++import javax.sound.sampled.UnsupportedAudioFileException;
++
++public class MusicPlayer {
++    // wav文件的路径
++    private File file;
++    // 是否循环播放
++    private volatile boolean isLoop = false;
++    // 是否正在播放
++    private volatile boolean isPlaying;
++    // FloatControl.Type.MASTER_GAIN的值(可用于调节音量)
++    private float newVolumn = 7;
++
++    private PlayThread playThread;
++
++    //	public static void main(String[] args) {
++//		try {
++//			MusicPlayer player = new MusicPlayer("F:\\初级软件实训\\CrazyArcade-master\\music\\bgm0.wav");
++//			player.setVolumn(6f).play();
++//			System.out.println("开始播放");
++//
++//			System.out.println("是否暂停？");
++//			Scanner sc = new Scanner(System.in);
++//			int isOver = sc.nextInt();
++//			if (isOver == 1) {
++//				player.over();
++//			}
++//
++//		} catch (Exception e) {
++//			e.printStackTrace();
++//		}
++//	}
++
++    public MusicPlayer(String srcPath) {
++        file = new File(srcPath);
++    }
++
++    /**
++     * 播放音乐
++     */
++    public void play() {
++        if (playThread == null) {
++            playThread = new PlayThread();
++            playThread.start();
++        }
++    }
++
++    /**
++     * 结束音乐（并非暂停）
++     */
++    public void over() {
++        isPlaying = false;
++        if (playThread != null) {
++            playThread = null;
++        }
++    }
++
++    /**
++     * 设置循环播放
++     * @param isLoop
++     * @return	返回当前对象
++     */
++    public MusicPlayer setLoop(boolean isLoop) {
++        this.isLoop = isLoop;
++        return this;
++    }
++
++    /**
++     * -80.0~6.0206测试,越小音量越小
++     * @param newVolumn
++     * @return	返回当前对象
++     */
++    public MusicPlayer setVolumn(float newVolumn) {
++        this.newVolumn = newVolumn;
++        return this;
++    }
++
++    /**
++     * 异步播放线程
++     */
++    private class PlayThread extends Thread {
++
++        @Override
++        public void run() {
++            isPlaying = true;
++            do {
++//				isPlaying = true;
++
++                SourceDataLine sourceDataLine = null;
++                BufferedInputStream bufIn = null;
++                AudioInputStream audioIn = null;
++                try {
++                    bufIn = new BufferedInputStream(new FileInputStream(file));
++                    audioIn = AudioSystem.getAudioInputStream(bufIn); // 可直接传入file
++
++                    AudioFormat format = audioIn.getFormat();
++                    sourceDataLine = AudioSystem.getSourceDataLine(format);
++                    sourceDataLine.open();
++                    // 必须open之后
++                    if (newVolumn != 7) {
++                        FloatControl control = (FloatControl) sourceDataLine.getControl(FloatControl.Type.MASTER_GAIN);
++//						System.out.println(control.getMaximum());
++//						System.out.println(control.getMinimum());
++                        control.setValue(newVolumn);
++                    }
++
++                    sourceDataLine.start();
++                    byte[] buf = new byte[512];
++//					System.out.println(audioIn.available());
++                    int len = -1;
++                    while (isPlaying && (len = audioIn.read(buf)) != -1) {
++                        sourceDataLine.write(buf, 0, len);
++                    }
++
++                } catch (Exception e) {
++                    e.printStackTrace();
++                } finally {
++
++                    if (sourceDataLine != null) {
++                        sourceDataLine.drain();
++                        sourceDataLine.close();
++                    }
++                    try {
++                        if (bufIn != null) {
++                            bufIn.close();
++                        }
++                        if (audioIn != null) {
++                            audioIn.close();
++                        }
++                    } catch (IOException e) {
++                        e.printStackTrace();
++                    }
++                }
++            } while (isPlaying && isLoop);
++        }
++    }
++
++
++}
+\ No newline at end of file
+Index: src/view/ChessGameFrame.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package view;\r\n\r\nimport controller.GameController;\r\n\r\nimport javax.swing.*;\r\nimport java.awt.*;\r\nimport java.io.IOException;\r\n\r\n/**\r\n * 这个类表示游戏过程中的整个游戏界面，是一切的载体\r\n */\r\npublic class ChessGameFrame extends JFrame {\r\n    private final int WIDTH;\r\n    private final int HEIGHT;\r\n    public final int CHESSBOARD_SIZE;\r\n    private GameController gameController;\r\n    private Chessboard chessboard;\r\n\r\n    public ChessGameFrame(int width, int height) {\r\n        setTitle(\"2022 CS102A Project Demo\"); //设置标题\r\n        this.WIDTH = width;\r\n        this.HEIGHT = height;\r\n        this.CHESSBOARD_SIZE = HEIGHT * 4 / 5;\r\n\r\n        setSize(WIDTH, HEIGHT);\r\n        setLocationRelativeTo(null); // Center the window.\r\n        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); //设置程序关闭按键，如果点击右上方的叉就游戏全部关闭了\r\n        setLayout(null);\r\n\r\n\r\n        addChessboard();\r\n        addLabel();\r\n        addSaveButton();\r\n        addLoadButton();\r\n        addBackButton();\r\n        addForwardButton();\r\n        doShutDownWork();\r\n    }\r\n\r\n    private void addChessboard() {\r\n        chessboard = new Chessboard(CHESSBOARD_SIZE, CHESSBOARD_SIZE);\r\n        gameController = new GameController(chessboard);\r\n        chessboard.setLocation(HEIGHT / 10, HEIGHT / 10);\r\n        add(chessboard);\r\n    }\r\n\r\n    private void addLabel() {\r\n        JLabel statusLabel = new JLabel(\"Sample label\");\r\n        statusLabel.setLocation(HEIGHT, HEIGHT / 10);\r\n        statusLabel.setSize(200, 60);\r\n        statusLabel.setFont(new Font(\"Rockwell\", Font.BOLD, 20));\r\n        add(statusLabel);\r\n    }\r\n\r\n    private void addSaveButton() {\r\n        JButton button = new JButton(\"Save\");\r\n        button.setLocation(HEIGHT, HEIGHT / 10 + 120);\r\n        button.setSize(200, 60);\r\n        button.setFont(new Font(\"Rockwell\", Font.BOLD, 20));\r\n        add(button);\r\n\r\n        button.addActionListener(e -> {\r\n            System.out.println(\"Click load\");\r\n            gameController.setSave(true);\r\n        });\r\n    }\r\n\r\n    private void addLoadButton() {\r\n        JButton button = new JButton(\"Load\");\r\n        button.setLocation(HEIGHT, HEIGHT / 10 + 240);\r\n        button.setSize(200, 60);\r\n        button.setFont(new Font(\"Rockwell\", Font.BOLD, 20));\r\n        add(button);\r\n\r\n        button.addActionListener(e -> {\r\n            gameController.showFileOpenDialog(this);\r\n        });\r\n    }\r\n\r\n    private void addBackButton() {\r\n        JButton button = new JButton(\"StepBack\");\r\n        button.setLocation(HEIGHT, HEIGHT / 10 + 360);\r\n        button.setSize(200, 60);\r\n        button.setFont(new Font(\"Rockwell\", Font.BOLD, 20));\r\n        add(button);\r\n\r\n        button.addActionListener(e -> {\r\n            gameController.stepBack();\r\n        });\r\n    }\r\n\r\n    private void addForwardButton() {\r\n        JButton button = new JButton(\"StepForward\");\r\n        button.setLocation(HEIGHT, HEIGHT / 10 + 480);\r\n        button.setSize(200, 60);\r\n        button.setFont(new Font(\"Rockwell\", Font.BOLD, 20));\r\n        add(button);\r\n\r\n        button.addActionListener(e -> {\r\n            gameController.stepForward();\r\n        });\r\n    }\r\n\r\n\r\n    private void doShutDownWork(){\r\n        Runtime.getRuntime().addShutdownHook(new Thread(){\r\n            public void run(){\r\n                gameController.deleteFileNotSaved();\r\n            }\r\n        });\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/view/ChessGameFrame.java b/src/view/ChessGameFrame.java
+--- a/src/view/ChessGameFrame.java	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/src/view/ChessGameFrame.java	(date 1653107045168)
+@@ -1,46 +1,142 @@
+ package view;
+ 
++import com.tedu.manager.MusicPlayer;
+ import controller.GameController;
+ 
+ import javax.swing.*;
+ import java.awt.*;
++import java.awt.event.ActionEvent;
++import java.awt.event.ActionListener;
+ import java.io.IOException;
+ 
+ /**
+  * 这个类表示游戏过程中的整个游戏界面，是一切的载体
+  */
+-public class ChessGameFrame extends JFrame {
+-    private final int WIDTH;
++public class ChessGameFrame extends JFrame implements ActionListener {
++   /* private final int WIDTH;
+     private final int HEIGHT;
+-    public final int CHESSBOARD_SIZE;
++    public final int CHESSBOARD_SIZE;*/
+     private GameController gameController;
+     private Chessboard chessboard;
+ 
+-    public ChessGameFrame(int width, int height) {
++    private JLabel jl;
++    private String back = "images/bac1.jpg";
++    private Color BGC = new Color(207,109,60);
++    private String BGM = "C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav";
++    public MusicPlayer musicPlayer;
++    JPanel panel;
++    private JLabel hintLabel = new JLabel("Turn For BLACK");
++
++
++    public int timeRemaining;
++
++    public String getBack() {
++        return back;
++    }
++
++    public Color getBGC() {
++        return BGC;
++    }
++
++    public String getBGM() {
++        return BGM;
++    }
++
++    public void setBGC(Color BGC) {
++        this.BGC = BGC;
++    }
++
++    public void setBack(String background) {
++        this.back = background;
++    }
++
++    public void setBGM(String BGM) {
++        this.BGM = BGM;
++    }
++
++
++
++    public ChessGameFrame(String back, String BGM, Color BGC) {
+         setTitle("2022 CS102A Project Demo"); //设置标题
+-        this.WIDTH = width;
+-        this.HEIGHT = height;
+-        this.CHESSBOARD_SIZE = HEIGHT * 4 / 5;
++        this.back = back;
++        this.BGC = BGC;
++        this.BGM = BGM;
++
++        musicPlayer = new MusicPlayer(getBGM());
++        musicPlayer.play();
++        musicPlayer.setLoop(true);
++
++        this.setTitle("ChessGame");
++        this.setSize(1000,800);
++        this.setLocationRelativeTo(null);
++        this.setResizable(false);
++        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
++
++        ImageIcon image = new ImageIcon(getBack());
++        Image image1 = image.getImage();
++        Image image2 = image1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
++        ImageIcon trueBack = new ImageIcon(image2);
++        jl = new JLabel(trueBack);
++        jl.setBounds(0,0, getWidth(), getHeight());
++
++        panel = new JPanel();
++        panel.setLayout(null);
+ 
+-        setSize(WIDTH, HEIGHT);
+-        setLocationRelativeTo(null); // Center the window.
+-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); //设置程序关闭按键，如果点击右上方的叉就游戏全部关闭了
+-        setLayout(null);
++        JButton bt3 = createButton("Restart");
++        bt3.setActionCommand("3");
++        bt3.setLocation(800,150);
++        bt3.setSize(160,50);
++        bt3.addActionListener(this);
+ 
++        JButton bt6 = createButton("Playback");
++        bt6.setSize(160,50);
++        bt6.setActionCommand("6");
++        bt6.setLocation(800,450);
++        bt6.addActionListener(this);
++
++        JButton bt8 = createButton("Change BGM");
++        bt8.setSize(160,50);
++        bt8.setActionCommand("8");
++        bt8.setLocation(800, 650);
++        bt8.addActionListener(this);
++
++        //panel.add(bt1);
++        //panel.add(bt2);
++        panel.add(bt3);
++        //panel.add(bt4);
++        //panel.add(bt5);
++        panel.add(bt6);
++        // panel.add(bt7);
++        panel.add(bt8);
++        panel.add(jl);
+ 
+         addChessboard();
+-        addLabel();
++        addHintLabel();
++        addChangeBGI();
+         addSaveButton();
+         addLoadButton();
+         addBackButton();
+         addForwardButton();
+         doShutDownWork();
++
++        this.add(panel);
++        this.setVisible(true);
++
++
++    }
++    public void addHintLabel(){
++        this.hintLabel.setFont(new Font("Castellar", Font.BOLD, 20));
++        this.hintLabel.setSize(250,60);
++        this.hintLabel.setLocation(760,70);
++        this.hintLabel.setForeground(new Color(246, 231, 215));
++        add(hintLabel);
+     }
+ 
+     private void addChessboard() {
+-        chessboard = new Chessboard(CHESSBOARD_SIZE, CHESSBOARD_SIZE);
++        chessboard = new Chessboard(650,650);
++        chessboard.setHintLabel(hintLabel);
+         gameController = new GameController(chessboard);
+-        chessboard.setLocation(HEIGHT / 10, HEIGHT / 10);
++        chessboard.setLocation(getWidth()/20, getWidth()/20);
+         add(chessboard);
+     }
+ 
+@@ -48,16 +144,17 @@
+         JLabel statusLabel = new JLabel("Sample label");
+         statusLabel.setLocation(HEIGHT, HEIGHT / 10);
+         statusLabel.setSize(200, 60);
+-        statusLabel.setFont(new Font("Rockwell", Font.BOLD, 20));
++        statusLabel.setFont(new Font("Castellar", Font.BOLD, 12));
+         add(statusLabel);
+     }
+ 
+     private void addSaveButton() {
+         JButton button = new JButton("Save");
+-        button.setLocation(HEIGHT, HEIGHT / 10 + 120);
+-        button.setSize(200, 60);
+-        button.setFont(new Font("Rockwell", Font.BOLD, 20));
+-        add(button);
++        button.setBackground(new Color(246, 231, 215));
++        button.setLocation(800, 250);
++        button.setSize(160, 50);
++        button.setFont(new Font("Castellar", Font.BOLD, 12));
++        panel.add(button);
+ 
+         button.addActionListener(e -> {
+             System.out.println("Click load");
+@@ -67,10 +164,11 @@
+ 
+     private void addLoadButton() {
+         JButton button = new JButton("Load");
+-        button.setLocation(HEIGHT, HEIGHT / 10 + 240);
+-        button.setSize(200, 60);
+-        button.setFont(new Font("Rockwell", Font.BOLD, 20));
+-        add(button);
++        button.setBackground(new Color(246, 231, 215));
++        button.setLocation(800, 350);
++        button.setSize(160, 50);
++        button.setFont(new Font("Castellar", Font.BOLD, 12));
++        panel.add(button);
+ 
+         button.addActionListener(e -> {
+             gameController.showFileOpenDialog(this);
+@@ -79,10 +177,11 @@
+ 
+     private void addBackButton() {
+         JButton button = new JButton("StepBack");
+-        button.setLocation(HEIGHT, HEIGHT / 10 + 360);
+-        button.setSize(200, 60);
+-        button.setFont(new Font("Rockwell", Font.BOLD, 20));
+-        add(button);
++        button.setBackground(new Color(246, 231, 215));
++        button.setLocation(320, 700);
++        button.setSize(160, 50);
++        button.setFont(new Font("Castellar", Font.BOLD, 12));
++        panel.add(button);
+ 
+         button.addActionListener(e -> {
+             gameController.stepBack();
+@@ -91,10 +190,11 @@
+ 
+     private void addForwardButton() {
+         JButton button = new JButton("StepForward");
+-        button.setLocation(HEIGHT, HEIGHT / 10 + 480);
+-        button.setSize(200, 60);
+-        button.setFont(new Font("Rockwell", Font.BOLD, 20));
+-        add(button);
++        button.setBackground(new Color(246, 231, 215));
++        button.setLocation(50, 700);
++        button.setSize(160, 50);
++        button.setFont(new Font("Castellar", Font.BOLD, 12));
++        panel.add(button);
+ 
+         button.addActionListener(e -> {
+             gameController.stepForward();
+@@ -109,4 +209,112 @@
+             }
+         });
+     }
++
++    @Override
++    public void actionPerformed(ActionEvent e) {
++
++    }
++    public JButton createButton(String text){
++        JButton btn = new JButton(text);
++        btn.setSize(new Dimension(160, 50));
++        Font font = new Font("Castellar", Font.BOLD, 10);
++        btn.setFont(font);
++        btn.setBackground(new Color(246, 231, 215));
++        return btn;
++    }
++    public void addChangeBGI(){
++        JButton button = createButton("Change BGI");
++        button.setLocation(800, 550);
++        button.setSize(160,50);
++        panel.add(button);
++        button.addActionListener(e -> {
++            /*JFileChooser chooser = new JFileChooser();
++            chooser.setMultiSelectionEnabled(false);
++
++            int value = chooser.showOpenDialog(button);
++            if(value == JFileChooser.APPROVE_OPTION){
++                panel.remove(jl);
++                repaint();
++
++                String path = chooser.getSelectedFile().getAbsolutePath();
++
++                ImageIcon image= new ImageIcon(path);
++                Image image1 = image.getImage();
++                Image image2 = image1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
++                ImageIcon trueBack = new ImageIcon(image2);
++                jl = new JLabel(trueBack);
++                jl.setBounds(0,0, getWidth(), getHeight());
++                panel.add(jl);
++            }*/
++            JFrame frame = new JFrame("Change BGI");
++            frame.setLocation(getWidth()/2, getHeight()/2);
++            frame.setSize(300,400);
++            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
++
++            JPanel panel1 = new JPanel();
++            panel1.setLayout(null);
++
++            ImageIcon pic = new ImageIcon("images/bac1.jpg");
++            Image pic1 = pic.getImage();
++            Image pic2 = pic1.getScaledInstance(300,400, Image.SCALE_FAST);
++            ImageIcon truePic = new ImageIcon(pic2);
++            JLabel jb = new JLabel(truePic);
++            jb.setBounds(0,0, frame.getWidth(), frame.getHeight());
++
++            JLabel jl1 = new JLabel("切换背景");
++            jl1.setLocation(100,100);
++            jl1.setSize(190,50);
++            jl1.setFont(new Font("造字工房米萌体", Font.BOLD, 30));
++            jl1.setForeground(new Color(108, 51, 4));
++
++
++            JButton bt1 = createButton("钢铁烈风");
++            bt1.setFont(new Font("造字工房米萌体", Font.BOLD, 15));
++            bt1.setBackground(new Color(207,109,60));
++            bt1.addActionListener(e1 -> {
++                panel.remove(jl);
++                repaint();
++
++                ImageIcon picture= new ImageIcon("C:\\Users\\86131\\Desktop\\proj素材\\back3.jpg");
++                Image picture1 = picture.getImage();
++                Image picture2 = picture1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
++                ImageIcon trueP = new ImageIcon(picture2);
++                jl = new JLabel(trueP);
++                jl.setBounds(0,0, getWidth(), getHeight());
++                panel.add(jl);
++
++                frame.setVisible(false);
++
++            });
++            bt1.setLocation(70, 170);
++
++            JButton bt2 = createButton("碧蓝天空");
++            bt2.setFont(new Font("造字工房米萌体", Font.BOLD, 15));
++            bt2.setBackground(new Color(207,109,60));
++            bt2.addActionListener(e1 -> {
++                panel.remove(jl);
++                repaint();
++
++                ImageIcon picture= new ImageIcon("C:\\Users\\86131\\Desktop\\proj素材\\back2.jpg");
++                Image picture1 = picture.getImage();
++                Image picture2 = picture1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
++                ImageIcon trueP = new ImageIcon(picture2);
++                jl = new JLabel(trueP);
++                jl.setBounds(0,0, getWidth(), getHeight());
++                panel.add(jl);
++
++                frame.setVisible(false);
++
++            });
++            bt2.setLocation(70, 240);
++
++
++            panel1.add(jb);
++            panel1.add(bt1);
++            panel1.add(bt2);
++            frame.add(jl1);
++            frame.add(panel1);
++            frame.setVisible(true);
++        });
++    }
+ }
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_17\" default=\"true\" project-jdk-name=\"17\" project-jdk-type=\"JavaSDK\">\r\n    <output url=\"file://$PROJECT_DIR$/out\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/.idea/misc.xml	(date 1653032171303)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="openjdk-18" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/out" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: src/view/Chessboard.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package view;\r\n\r\n\r\nimport controller.GameController;\r\nimport model.*;\r\nimport controller.ClickController;\r\n\r\nimport javax.swing.*;\r\nimport java.awt.*;\r\nimport java.util.ArrayList;\r\nimport java.util.Arrays;\r\nimport java.util.List;\r\n\r\npublic class Chessboard extends JComponent {\r\n    private static final int CHESSBOARD_SIZE = 8;\r\n    private final ChessComponent[][] chessComponents = new ChessComponent[CHESSBOARD_SIZE][CHESSBOARD_SIZE];\r\n    private ChessColor currentColor = ChessColor.WHITE;\r\n    private int round;\r\n    private final ClickController clickController = new ClickController(this);\r\n    private GameController gameController;\r\n    private final int CHESS_SIZE;\r\n    protected ChessColor winner;\r\n    public KingChessComponent whiteKing;\r\n    public KingChessComponent blackKing;\r\n\r\n    public Chessboard(int width, int height) {\r\n        setLayout(null); // Use absolute layout.\r\n        setSize(width, height);\r\n\r\n        CHESS_SIZE = width / 8;\r\n        System.out.printf(\"chessboard size = %d, chess size = %d\\n\", width, CHESS_SIZE);\r\n\r\n        round = 0;\r\n        initiateEmptyChessboard();\r\n\r\n        initRookOnBoard(0, 0, ChessColor.BLACK);\r\n        initRookOnBoard(0, CHESSBOARD_SIZE - 1, ChessColor.BLACK);\r\n        initRookOnBoard(CHESSBOARD_SIZE - 1, 0, ChessColor.WHITE);\r\n        initRookOnBoard(CHESSBOARD_SIZE - 1, CHESSBOARD_SIZE - 1, ChessColor.WHITE);\r\n        initKnightOnBoard(0, 1, ChessColor.BLACK);\r\n        initKnightOnBoard(0, CHESSBOARD_SIZE - 2, ChessColor.BLACK);\r\n        initKnightOnBoard(CHESSBOARD_SIZE - 1, 1, ChessColor.WHITE);\r\n        initKnightOnBoard(CHESSBOARD_SIZE - 1, CHESSBOARD_SIZE - 2, ChessColor.WHITE);\r\n        initBishopOnBoard(0, 2, ChessColor.BLACK);\r\n        initBishopOnBoard(0, CHESSBOARD_SIZE - 3, ChessColor.BLACK);\r\n        initBishopOnBoard(CHESSBOARD_SIZE - 1, 2, ChessColor.WHITE);\r\n        initBishopOnBoard(CHESSBOARD_SIZE - 1, CHESSBOARD_SIZE - 3, ChessColor.WHITE);\r\n        blackKing = initKingOnBoard(0, CHESSBOARD_SIZE - 4, ChessColor.BLACK);\r\n        whiteKing = initKingOnBoard(CHESSBOARD_SIZE - 1, CHESSBOARD_SIZE - 4, ChessColor.WHITE);\r\n        initQueenOnBoard(0, 3, ChessColor.BLACK);\r\n        initQueenOnBoard(CHESSBOARD_SIZE - 1, 3, ChessColor.WHITE);\r\n        for (int i = 0; i < CHESSBOARD_SIZE; i++){\r\n            initPawnOnBoard(1, i, ChessColor.BLACK);\r\n            initPawnOnBoard(CHESSBOARD_SIZE - 2, i, ChessColor.WHITE);\r\n        }\r\n    }\r\n\r\n    public ChessComponent[][] getChessComponents() {\r\n        return chessComponents;\r\n    }\r\n\r\n    public ChessColor getCurrentColor() {\r\n        return currentColor;\r\n    }\r\n\r\n    public ChessColor getWinner() {\r\n        return winner;\r\n    }\r\n\r\n    public int getRound() {\r\n        return round;\r\n    }\r\n\r\n    public void setRound(int round) {\r\n        this.round = round;\r\n    }\r\n\r\n    public GameController getGameController() {\r\n        return gameController;\r\n    }\r\n\r\n    public void setGameController(GameController gameController) {\r\n        this.gameController = gameController;\r\n    }\r\n\r\n    public void putChessOnBoard(ChessComponent chessComponent) {\r\n        int row = chessComponent.getChessboardPoint().getX(), col = chessComponent.getChessboardPoint().getY();\r\n\r\n        if (chessComponents[row][col] != null) {\r\n            remove(chessComponents[row][col]);\r\n        }\r\n        add(chessComponents[row][col] = chessComponent);\r\n    }\r\n\r\n    public void swapChessComponents(ChessComponent chess1, ChessComponent chess2) {\r\n        // Note that chess1 has higher priority, 'destroys' chess2 if exists.\r\n        remove(chess2);\r\n        add(chess2 = new EmptySlotComponent(chess2.getChessboardPoint(), chess2.getLocation(), clickController, CHESS_SIZE));\r\n        chess1.swapLocation(chess2);\r\n        int row1 = chess1.getChessboardPoint().getX(), col1 = chess1.getChessboardPoint().getY();\r\n        chessComponents[row1][col1] = chess1;\r\n        int row2 = chess2.getChessboardPoint().getX(), col2 = chess2.getChessboardPoint().getY();\r\n        chessComponents[row2][col2] = chess2;\r\n\r\n        chess1.repaint();\r\n        chess2.repaint();\r\n    }\r\n\r\n    public void removeChessComponents(ChessComponent chess) {\r\n        remove(chess);\r\n        add(chess = new EmptySlotComponent(chess.getChessboardPoint(), chess.getLocation(), clickController, CHESS_SIZE));\r\n        chess.repaint();\r\n    }\r\n\r\n    public void initiateEmptyChessboard() {\r\n        for (int i = 0; i < chessComponents.length; i++) {\r\n            for (int j = 0; j < chessComponents[i].length; j++) {\r\n                putChessOnBoard(new EmptySlotComponent(new ChessboardPoint(i, j), calculatePoint(i, j), clickController, CHESS_SIZE));\r\n            }\r\n        }\r\n    }\r\n\r\n    public void swapColor() {\r\n        currentColor = currentColor == ChessColor.BLACK ? ChessColor.WHITE : ChessColor.BLACK;\r\n    }\r\n\r\n    private void initRookOnBoard(int row, int col, ChessColor color) {\r\n        ChessComponent chessComponent = new RookChessComponent(new ChessboardPoint(row, col), calculatePoint(row, col), color, clickController, CHESS_SIZE);\r\n        chessComponent.setVisible(true);\r\n        putChessOnBoard(chessComponent);\r\n    }\r\n\r\n    private void initKnightOnBoard(int row, int col, ChessColor color) {\r\n        ChessComponent chessComponent = new KnightChessComponent(new ChessboardPoint(row, col), calculatePoint(row, col), color, clickController, CHESS_SIZE);\r\n        chessComponent.setVisible(true);\r\n        putChessOnBoard(chessComponent);\r\n    }\r\n\r\n    private void initBishopOnBoard(int row, int col, ChessColor color) {\r\n        ChessComponent chessComponent = new BishopChessComponent(new ChessboardPoint(row, col), calculatePoint(row, col), color, clickController, CHESS_SIZE);\r\n        chessComponent.setVisible(true);\r\n        putChessOnBoard(chessComponent);\r\n    }\r\n\r\n    private void initQueenOnBoard(int row, int col, ChessColor color) {\r\n        ChessComponent chessComponent = new QueenChessComponent(new ChessboardPoint(row, col), calculatePoint(row, col), color, clickController, CHESS_SIZE);\r\n        chessComponent.setVisible(true);\r\n        putChessOnBoard(chessComponent);\r\n    }\r\n\r\n    private KingChessComponent initKingOnBoard(int row, int col, ChessColor color) {\r\n        KingChessComponent chessComponent = new KingChessComponent(new ChessboardPoint(row, col), calculatePoint(row, col), color, clickController, CHESS_SIZE);\r\n        chessComponent.setVisible(true);\r\n        putChessOnBoard(chessComponent);\r\n        return chessComponent;\r\n    }\r\n\r\n    private void initPawnOnBoard(int row, int col, ChessColor color) {\r\n        ChessComponent chessComponent = new PawnChessComponent(new ChessboardPoint(row, col), calculatePoint(row, col), color, clickController, CHESS_SIZE);\r\n        chessComponent.setVisible(true);\r\n        putChessOnBoard(chessComponent);\r\n    }\r\n\r\n    @Override\r\n    protected void paintComponent(Graphics g) {\r\n        super.paintComponent(g);\r\n        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);\r\n    }\r\n\r\n\r\n    private Point calculatePoint(int row, int col) {\r\n        return new Point(col * CHESS_SIZE, row * CHESS_SIZE);\r\n    }\r\n\r\n    public void loadGame(List<String> chessData) {\r\n        initiateEmptyChessboard();\r\n        for (int i = 0; i < chessData.size() - 1; i++){\r\n            for (int j = 0; j < 8; j++){\r\n                switch (chessData.get(i).charAt(j)) {\r\n                    case 'K' -> blackKing = initKingOnBoard(i, j, ChessColor.BLACK);\r\n                    case 'k' -> whiteKing = initKingOnBoard(i, j, ChessColor.WHITE);\r\n                    case 'Q' -> initQueenOnBoard(i, j, ChessColor.BLACK);\r\n                    case 'q' -> initQueenOnBoard(i, j, ChessColor.WHITE);\r\n                    case 'B' -> initBishopOnBoard(i, j, ChessColor.BLACK);\r\n                    case 'b' -> initBishopOnBoard(i, j, ChessColor.WHITE);\r\n                    case 'N' -> initKnightOnBoard(i, j, ChessColor.BLACK);\r\n                    case 'n' -> initKnightOnBoard(i, j, ChessColor.WHITE);\r\n                    case 'R' -> initRookOnBoard(i, j, ChessColor.BLACK);\r\n                    case 'r' -> initRookOnBoard(i, j, ChessColor.WHITE);\r\n                    case 'P' -> initPawnOnBoard(i, j, ChessColor.BLACK);\r\n                    case 'p' -> initPawnOnBoard(i, j, ChessColor.WHITE);\r\n                }\r\n            }\r\n        }\r\n        this.repaint();\r\n        if (chessData.get(chessData.size() - 1).equals(\"w\")) {\r\n            currentColor = ChessColor.WHITE;\r\n        }\r\n        else\r\n            currentColor = ChessColor.BLACK;\r\n        this.checkCheckmated();\r\n    }\r\n\r\n    public void checkCheckmated(){\r\n        if (currentColor == ChessColor.BLACK){\r\n            whiteKing.setCheckmated(false);\r\n            whiteKing.repaint();\r\n            for (ChessComponent[] Chess : chessComponents) {\r\n                for (ChessComponent chess : Chess){\r\n                    if (chess.getChessColor() != currentColor &&\r\n                            chess.getCanMoveChess(chessComponents).contains(blackKing.getChessboardPoint())){\r\n                        blackKing.setCheckmated(true);\r\n                        blackKing.repaint();\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        else {\r\n            blackKing.setCheckmated(false);\r\n            blackKing.repaint();\r\n            for (ChessComponent[] Chess : chessComponents) {\r\n                for (ChessComponent chess : Chess){\r\n                    if (chess.getChessColor() != currentColor &&\r\n                            chess.getCanMoveChess(chessComponents).contains(whiteKing.getChessboardPoint())){\r\n                        whiteKing.setCheckmated(true);\r\n                        whiteKing.repaint();\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n    }\r\n\r\n    public boolean checkGameOver() {\r\n        ChessComponent[][] chessComponents = getChessComponents();\r\n        ChessColor chessColor = getCurrentColor();\r\n        for (ChessComponent[] Chess : chessComponents){\r\n            for (ChessComponent chess : Chess){\r\n                if (chess.getCanMoveChess(chessComponents).size() != 0 && chess.getChessColor() == chessColor){\r\n                    return false;\r\n                }\r\n            }\r\n        }\r\n        winner = chessColor == ChessColor.BLACK? ChessColor.WHITE : ChessColor.BLACK;\r\n        return true;\r\n    }\r\n\r\n    @Override\r\n    public String toString() {\r\n        String str = \"\";\r\n        for (int i = 0; i < 8; i++){\r\n            for (int j = 0; j < 8; j++){\r\n                str = str.concat(chessComponents[i][j].toString());\r\n            }\r\n            str = str.concat(\"\\n\");\r\n        }\r\n        if (currentColor == ChessColor.WHITE) str = str.concat(\"w\\n\");\r\n        else str = str.concat(\"b\\n\");\r\n        return str;\r\n    }\r\n\r\n    public List<String> toStringList() {\r\n        String[] strings = toString().split(\"\\n\");\r\n        System.out.println(strings.length);\r\n        return new ArrayList<>(Arrays.asList(strings));\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/view/Chessboard.java b/src/view/Chessboard.java
+--- a/src/view/Chessboard.java	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/src/view/Chessboard.java	(date 1653188000705)
+@@ -1,6 +1,7 @@
+ package view;
+ 
+ 
++import com.tedu.manager.MusicPlayer;
+ import controller.GameController;
+ import model.*;
+ import controller.ClickController;
+@@ -22,6 +23,16 @@
+     protected ChessColor winner;
+     public KingChessComponent whiteKing;
+     public KingChessComponent blackKing;
++    private JLabel hintLabel;
++
++
++    private Color color1;
++    private Color color2;
++
++    public void setHintLabel(JLabel hintLabel) {
++        this.hintLabel = hintLabel;
++    }
++
+ 
+     public Chessboard(int width, int height) {
+         setLayout(null); // Use absolute layout.
+@@ -102,6 +113,9 @@
+         int row2 = chess2.getChessboardPoint().getX(), col2 = chess2.getChessboardPoint().getY();
+         chessComponents[row2][col2] = chess2;
+ 
++        MusicPlayer musicPlayer = new MusicPlayer("./Music/ChessSound.wav");
++        musicPlayer.play();
++
+         chess1.repaint();
+         chess2.repaint();
+     }
+@@ -122,6 +136,7 @@
+ 
+     public void swapColor() {
+         currentColor = currentColor == ChessColor.BLACK ? ChessColor.WHITE : ChessColor.BLACK;
++        hintLabel.setText(currentColor == ChessColor.BLACK? "Turn For WHITE" : "Turn For BLACK");
+     }
+ 
+     private void initRookOnBoard(int row, int col, ChessColor color) {
+@@ -266,5 +281,4 @@
+         System.out.println(strings.length);
+         return new ArrayList<>(Arrays.asList(strings));
+     }
+-
+ }
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"VcsDirectoryMappings\">\r\n    <mapping directory=\"$PROJECT_DIR$\" vcs=\"Git\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+--- a/.idea/vcs.xml	(revision 6f459a1c9aa29fa4513e9cb0de00337ac58981dd)
++++ b/.idea/vcs.xml	(date 1653032171308)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="VcsDirectoryMappings">
+-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++    <mapping directory="" vcs="Git" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/libraries/jlayer_1_0_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/libraries/jlayer_1_0_1.xml b/.idea/libraries/jlayer_1_0_1.xml
+new file mode 100644
+--- /dev/null	(date 1653103421680)
++++ b/.idea/libraries/jlayer_1_0_1.xml	(date 1653103421680)
+@@ -0,0 +1,9 @@
++<component name="libraryTable">
++  <library name="jlayer-1.0.1">
++    <CLASSES>
++      <root url="jar://$USER_HOME$/Desktop/proj/lib/jlayer-1.0.1.jar!/" />
++    </CLASSES>
++    <JAVADOC />
++    <SOURCES />
++  </library>
++</component>
+\ No newline at end of file

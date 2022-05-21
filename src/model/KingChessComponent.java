@@ -78,6 +78,59 @@ public class KingChessComponent extends ChessComponent {
         if (X < 7 && Y < 7 && chessboard[X + 1][Y + 1].getChessColor() != chessColor)
             pointList.add(chessboard[X + 1][Y + 1].getChessboardPoint());
 
+        if (chessColor == ChessColor.WHITE && !isMove() &&
+                chessboard[7][0] instanceof RookChessComponent && !chessboard[7][0].isMove()) {
+            boolean b = true;
+            for (int i = 1; i < 4; i++) {
+                if (!(chessboard[7][i] instanceof EmptySlotComponent)) {
+                    b = false;
+                    break;
+                }
+            }
+            if (b) {
+                pointList.add(chessboard[7][2].getChessboardPoint());
+            }
+        }
+        if (chessColor == ChessColor.WHITE && !isMove() &&
+                chessboard[7][7] instanceof RookChessComponent && !chessboard[7][0].isMove()) {
+            boolean b = true;
+            for (int i = 5; i < 7; i++) {
+                if (!(chessboard[7][i] instanceof EmptySlotComponent)) {
+                    b = false;
+                    break;
+                }
+            }
+            if (b) {
+                pointList.add(chessboard[7][6].getChessboardPoint());
+            }
+        }
+        if (chessColor == ChessColor.BLACK && !isMove() &&
+                chessboard[0][0] instanceof RookChessComponent && !chessboard[0][0].isMove()) {
+            boolean b = true;
+            for (int i = 1; i < 4; i++) {
+                if (!(chessboard[0][i] instanceof EmptySlotComponent)) {
+                    b = false;
+                    break;
+                }
+            }
+            if (b) {
+                pointList.add(chessboard[0][2].getChessboardPoint());
+            }
+        }
+        if (chessColor == ChessColor.BLACK && !isMove() &&
+                chessboard[0][7] instanceof RookChessComponent && !chessboard[0][7].isMove()) {
+            boolean b = true;
+            for (int i = 5; i < 7; i++) {
+                if (!(chessboard[0][i] instanceof EmptySlotComponent)) {
+                    b = false;
+                    break;
+                }
+            }
+            if (b) {
+                pointList.add(chessboard[0][6].getChessboardPoint());
+            }
+        }
+
         if (!isSkip()){
             pointList.removeIf(this::checkAfterMove);
         }

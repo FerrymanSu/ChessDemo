@@ -1,6 +1,7 @@
 package view;
 
 
+import com.tedu.manager.MusicPlayer;
 import controller.GameController;
 import model.*;
 import controller.ClickController;
@@ -22,6 +23,16 @@ public class Chessboard extends JComponent {
     protected ChessColor winner;
     public KingChessComponent whiteKing;
     public KingChessComponent blackKing;
+    private JLabel hintLabel;
+
+
+    private Color color1;
+    private Color color2;
+
+    public void setHintLabel(JLabel hintLabel) {
+        this.hintLabel = hintLabel;
+    }
+
 
     public Chessboard(int width, int height) {
         setLayout(null); // Use absolute layout.
@@ -102,6 +113,9 @@ public class Chessboard extends JComponent {
         int row2 = chess2.getChessboardPoint().getX(), col2 = chess2.getChessboardPoint().getY();
         chessComponents[row2][col2] = chess2;
 
+        MusicPlayer musicPlayer = new MusicPlayer("./Music/ChessSound.wav");
+        musicPlayer.play();
+
         chess1.repaint();
         chess2.repaint();
     }
@@ -122,6 +136,7 @@ public class Chessboard extends JComponent {
 
     public void swapColor() {
         currentColor = currentColor == ChessColor.BLACK ? ChessColor.WHITE : ChessColor.BLACK;
+        hintLabel.setText(currentColor == ChessColor.BLACK? "Turn For WHITE" : "Turn For BLACK");
     }
 
     private void initRookOnBoard(int row, int col, ChessColor color) {
@@ -201,6 +216,20 @@ public class Chessboard extends JComponent {
         this.checkCheckmated();
     }
 
+    public void pawnTurn (ChessComponent chess , int n) {
+        final ChessColor chessColor = chess.getChessColor();
+        final int X = chess.getChessboardPoint().getX();
+        final int Y = chess.getChessboardPoint().getY();
+        remove(chess);
+        switch (n) {
+            case 0 -> initQueenOnBoard(X,Y,chessColor);
+            case 1 -> initBishopOnBoard(X,Y,chessColor);
+            case 2 -> initKnightOnBoard(X,Y,chessColor);
+            case 3 -> initRookOnBoard(X,Y,chessColor);
+        }
+        chessComponents[X][Y].repaint();
+    }
+
     public void checkCheckmated(){
         if (currentColor == ChessColor.BLACK){
             whiteKing.setCheckmated(false);
@@ -266,5 +295,4 @@ public class Chessboard extends JComponent {
         System.out.println(strings.length);
         return new ArrayList<>(Arrays.asList(strings));
     }
-
 }

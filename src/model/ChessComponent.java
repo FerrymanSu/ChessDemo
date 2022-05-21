@@ -2,25 +2,35 @@ package model;
 
 import view.ChessboardPoint;
 import controller.ClickController;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public abstract class ChessComponent extends JComponent implements Cloneable{
 
-    private static final Color[] BACKGROUND_COLORS = {Color.WHITE, Color.BLACK};
+    private  Color[] BACKGROUND_COLORS = {new Color(103,67,49), new Color(231,203,167)};
     private ClickController clickController;
 
     private ChessboardPoint chessboardPoint;
     protected final ChessColor chessColor;
     protected char name;
+    private boolean move;
     private boolean selected;
     private boolean canMoved;
     private boolean skip;
     private boolean mouseEnter;
     protected ChessComponent[][] chessComponents;
+
+
+    public void setColor(Color[] color){
+        BACKGROUND_COLORS = color;
+    }
+
 
     protected ChessComponent(ChessboardPoint chessboardPoint, Point location, ChessColor chessColor, ClickController clickController, int size) {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -28,6 +38,7 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
         setSize(size, size);
         this.chessboardPoint = chessboardPoint;
         this.chessColor = chessColor;
+        this.move = false;
         this.selected = false;
         this.canMoved = false;
         this.skip = false;
@@ -46,6 +57,14 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
 
     public ChessColor getChessColor() {
         return chessColor;
+    }
+
+    public boolean isMove() {
+        return move;
+    }
+
+    public void setMove(boolean move) {
+        this.move = move;
     }
 
     public boolean isSelected() {
@@ -198,7 +217,7 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
         g.setColor(squareColor);
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
         if (isMouseEnter()) {
-            g.setColor(Color.GREEN);
+            g.setColor(new Color(51,201,255));
             g.draw3DRect(0,0,this.getWidth(),this.getHeight(),true);
             g.fill3DRect(0,0,this.getWidth(),this.getHeight(),true);
         }
