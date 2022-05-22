@@ -136,7 +136,7 @@ public class Chessboard extends JComponent {
 
     public void swapColor() {
         currentColor = currentColor == ChessColor.BLACK ? ChessColor.WHITE : ChessColor.BLACK;
-        hintLabel.setText(currentColor == ChessColor.BLACK? "Turn For WHITE" : "Turn For BLACK");
+        hintLabel.setText(currentColor == ChessColor.BLACK? "Turn For BLACK" : "Turn For WHITE");
     }
 
     private void initRookOnBoard(int row, int col, ChessColor color) {

@@ -127,10 +127,10 @@ public class FirstView extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getActionCommand().equals("1")){
             this.setVisible(false);
-            new ChessGameFrame("images/bac1.jpg","C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav", new Color(207,109,60));
+            new ChessGameFrame("images/bac1.jpg","Music/gv8rh-mzyvz.wav", new Color(207,109,60));
         }else if(e.getActionCommand().equals("2")){
             this.setVisible(false);
-            new ChessGameFrame("images/bac1.jpg","C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav", new Color(207,109,60));
+            new ChessGameFrame("images/bac1.jpg","Music/gv8rh-mzyvz.wav", new Color(207,109,60));
         }else if(e.getActionCommand().equals("4")){
             new Thread() {
                 //重写run方法
@@ -138,19 +138,16 @@ public class FirstView extends JFrame implements ActionListener {
                     //构造命令
                     String cmd = "cmd.exe /c start ";
 
-                    //构造本地文件路径或者网页URL
-                    //String file = "http://www.baidu.com";
                     String file = "https://jingyan.baidu.com/article/11c17a2c775262f446e39ddc.html";
 
                     try {
-                        //执行操作
                         Runtime.getRuntime().exec(cmd + file);
                     } catch (IOException ignore) {
-                        //打印异常
+
                         ignore.printStackTrace();
                     }
                 }
-            }.start();//启动线程
+            }.start();
         }
         else {
             System.exit(0);

@@ -25,10 +25,9 @@ public class ChessGameFrame extends JFrame implements ActionListener {
     private String BGM = "C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav";
     public MusicPlayer musicPlayer;
     JPanel panel;
-    private JLabel hintLabel = new JLabel("Turn For BLACK");
+    private JLabel hintLabel = new JLabel("Turn For WHITE");
 
 
-    public int timeRemaining;
 
     public String getBack() {
         return back;
@@ -42,7 +41,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         return BGM;
     }
 
-    public void setBGC(Color BGC) {
+   /* public void setBGC(Color BGC) {
         this.BGC = BGC;
     }
 
@@ -52,7 +51,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
 
     public void setBGM(String BGM) {
         this.BGM = BGM;
-    }
+    }*/
 
 
 
