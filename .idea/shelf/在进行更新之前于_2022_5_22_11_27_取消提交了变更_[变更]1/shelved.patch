@@ -1,0 +1,151 @@
+Index: src/com/tedu/manager/MusicPlayer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.tedu.manager;\r\n\r\nimport java.io.BufferedInputStream;\r\nimport java.io.File;\r\nimport java.io.FileInputStream;\r\nimport java.io.IOException;\r\nimport java.util.Scanner;\r\n\r\nimport javax.sound.sampled.AudioFormat;\r\nimport javax.sound.sampled.AudioInputStream;\r\nimport javax.sound.sampled.AudioSystem;\r\nimport javax.sound.sampled.Control;\r\nimport javax.sound.sampled.FloatControl;\r\nimport javax.sound.sampled.LineUnavailableException;\r\nimport javax.sound.sampled.SourceDataLine;\r\nimport javax.sound.sampled.UnsupportedAudioFileException;\r\n\r\npublic class MusicPlayer {\r\n    // wav文件的路径\r\n    private File file;\r\n    // 是否循环播放\r\n    private volatile boolean isLoop = false;\r\n    // 是否正在播放\r\n    private volatile boolean isPlaying;\r\n    // FloatControl.Type.MASTER_GAIN的值(可用于调节音量)\r\n    private float newVolumn = 7;\r\n\r\n    private PlayThread playThread;\r\n\r\n    //\tpublic static void main(String[] args) {\r\n//\t\ttry {\r\n//\t\t\tMusicPlayer player = new MusicPlayer(\"F:\\\\初级软件实训\\\\CrazyArcade-master\\\\music\\\\bgm0.wav\");\r\n//\t\t\tplayer.setVolumn(6f).play();\r\n//\t\t\tSystem.out.println(\"开始播放\");\r\n//\r\n//\t\t\tSystem.out.println(\"是否暂停？\");\r\n//\t\t\tScanner sc = new Scanner(System.in);\r\n//\t\t\tint isOver = sc.nextInt();\r\n//\t\t\tif (isOver == 1) {\r\n//\t\t\t\tplayer.over();\r\n//\t\t\t}\r\n//\r\n//\t\t} catch (Exception e) {\r\n//\t\t\te.printStackTrace();\r\n//\t\t}\r\n//\t}\r\n\r\n    public MusicPlayer(String srcPath) {\r\n        file = new File(srcPath);\r\n    }\r\n\r\n    /**\r\n     * 播放音乐\r\n     */\r\n    public void play() {\r\n        if (playThread == null) {\r\n            playThread = new PlayThread();\r\n            playThread.start();\r\n        }\r\n    }\r\n\r\n    /**\r\n     * 结束音乐（并非暂停）\r\n     */\r\n    public void over() {\r\n        isPlaying = false;\r\n        if (playThread != null) {\r\n            playThread = null;\r\n        }\r\n    }\r\n\r\n    /**\r\n     * 设置循环播放\r\n     * @param isLoop\r\n     * @return\t返回当前对象\r\n     */\r\n    public MusicPlayer setLoop(boolean isLoop) {\r\n        this.isLoop = isLoop;\r\n        return this;\r\n    }\r\n\r\n    /**\r\n     * -80.0~6.0206测试,越小音量越小\r\n     * @param newVolumn\r\n     * @return\t返回当前对象\r\n     */\r\n    public MusicPlayer setVolumn(float newVolumn) {\r\n        this.newVolumn = newVolumn;\r\n        return this;\r\n    }\r\n\r\n    /**\r\n     * 异步播放线程\r\n     */\r\n    private class PlayThread extends Thread {\r\n\r\n        @Override\r\n        public void run() {\r\n            isPlaying = true;\r\n            do {\r\n//\t\t\t\tisPlaying = true;\r\n\r\n                SourceDataLine sourceDataLine = null;\r\n                BufferedInputStream bufIn = null;\r\n                AudioInputStream audioIn = null;\r\n                try {\r\n                    bufIn = new BufferedInputStream(new FileInputStream(file));\r\n                    audioIn = AudioSystem.getAudioInputStream(bufIn); // 可直接传入file\r\n\r\n                    AudioFormat format = audioIn.getFormat();\r\n                    sourceDataLine = AudioSystem.getSourceDataLine(format);\r\n                    sourceDataLine.open();\r\n                    // 必须open之后\r\n                    if (newVolumn != 7) {\r\n                        FloatControl control = (FloatControl) sourceDataLine.getControl(FloatControl.Type.MASTER_GAIN);\r\n//\t\t\t\t\t\tSystem.out.println(control.getMaximum());\r\n//\t\t\t\t\t\tSystem.out.println(control.getMinimum());\r\n                        control.setValue(newVolumn);\r\n                    }\r\n\r\n                    sourceDataLine.start();\r\n                    byte[] buf = new byte[512];\r\n//\t\t\t\t\tSystem.out.println(audioIn.available());\r\n                    int len = -1;\r\n                    while (isPlaying && (len = audioIn.read(buf)) != -1) {\r\n                        sourceDataLine.write(buf, 0, len);\r\n                    }\r\n\r\n                } catch (Exception e) {\r\n                    e.printStackTrace();\r\n                } finally {\r\n\r\n                    if (sourceDataLine != null) {\r\n                        sourceDataLine.drain();\r\n                        sourceDataLine.close();\r\n                    }\r\n                    try {\r\n                        if (bufIn != null) {\r\n                            bufIn.close();\r\n                        }\r\n                        if (audioIn != null) {\r\n                            audioIn.close();\r\n                        }\r\n                    } catch (IOException e) {\r\n                        e.printStackTrace();\r\n                    }\r\n                }\r\n            } while (isPlaying && isLoop);\r\n        }\r\n    }\r\n\r\n\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/com/tedu/manager/MusicPlayer.java b/src/com/tedu/manager/MusicPlayer.java
+--- a/src/com/tedu/manager/MusicPlayer.java	
++++ b/src/com/tedu/manager/MusicPlayer.java	
+@@ -27,23 +27,6 @@
+ 
+     private PlayThread playThread;
+ 
+-    //	public static void main(String[] args) {
+-//		try {
+-//			MusicPlayer player = new MusicPlayer("F:\\初级软件实训\\CrazyArcade-master\\music\\bgm0.wav");
+-//			player.setVolumn(6f).play();
+-//			System.out.println("开始播放");
+-//
+-//			System.out.println("是否暂停？");
+-//			Scanner sc = new Scanner(System.in);
+-//			int isOver = sc.nextInt();
+-//			if (isOver == 1) {
+-//				player.over();
+-//			}
+-//
+-//		} catch (Exception e) {
+-//			e.printStackTrace();
+-//		}
+-//	}
+ 
+     public MusicPlayer(String srcPath) {
+         file = new File(srcPath);
+@@ -69,21 +52,11 @@
+         }
+     }
+ 
+-    /**
+-     * 设置循环播放
+-     * @param isLoop
+-     * @return	返回当前对象
+-     */
+     public MusicPlayer setLoop(boolean isLoop) {
+         this.isLoop = isLoop;
+         return this;
+     }
+ 
+-    /**
+-     * -80.0~6.0206测试,越小音量越小
+-     * @param newVolumn
+-     * @return	返回当前对象
+-     */
+     public MusicPlayer setVolumn(float newVolumn) {
+         this.newVolumn = newVolumn;
+         return this;
+Index: src/view/FirstView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package view;\r\n\r\nimport com.tedu.manager.MusicPlayer;\r\n\r\nimport javax.swing.*;\r\nimport java.awt.*;\r\nimport java.awt.event.ActionEvent;\r\nimport java.awt.event.ActionListener;\r\nimport java.io.IOException;\r\n\r\npublic class FirstView extends JFrame implements ActionListener {\r\n\r\n    private String str;\r\n\r\n\r\n    public FirstView(){\r\n        this.setTitle(\"Chess\");\r\n        this.setSize(550, 500);\r\n        this.setLocationRelativeTo(null);\r\n        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\r\n        this.setResizable(false);\r\n        this.getContentPane().setBackground(new Color(88,47,27));\r\n\r\n        /*ImageIcon icon=new ImageIcon(\"images/bac1.jpg\");\r\n        //Image im=new Image(icon);\r\n        //将图片放入label中\r\n        JLabel label=new JLabel(icon);\r\n        //设置label的大小\r\n        label.setBounds(0,0,icon.getIconWidth(),icon.getIconHeight());\r\n        //取窗口的第二层，将label放入\r\n        this.getLayeredPane().add(label,Integer.MIN_VALUE);\r\n        //获取frame的顶层容器,并设置为透明\r\n        JPanel j=(JPanel)this.getContentPane();\r\n\r\n        //j.setOpaque(false);\r\n\r\n        //必须设置为透明的。否则看不到图片\r\n        //panel.setOpaque(false);*/\r\n\r\n\r\n        ImageIcon image = new ImageIcon(\"images/bac1.jpg\");\r\n        Image image1 = image.getImage();\r\n        Image image2 = image1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);\r\n        ImageIcon trueBack = new ImageIcon(image2);\r\n        JLabel jl = new JLabel(trueBack);\r\n        jl.setBounds(0,0, getWidth(), getHeight());\r\n\r\n        /*ImageIcon secondImage = new ImageIcon(\"images/标题.png\");\r\n        Image secondImage1 = secondImage.getImage();\r\n        Image secondImage2 = secondImage1.getScaledInstance(100,50, Image.SCALE_FAST);\r\n        ImageIcon trueName = new ImageIcon(secondImage2);\r\n        JLabel jl1 = new JLabel(trueName);\r\n        jl1.setBounds(205,100, 100,50);*/\r\n\r\n        JPanel panel = new JPanel();\r\n        panel.setLayout(null);\r\n\r\n        JLabel name = new JLabel(\"Chess\");\r\n        name.setSize(200,100);\r\n        name.setLocation(205, 70);\r\n        name.setFont(new Font(\"Castellar\", Font.BOLD, 36));\r\n        name.setForeground(new Color(108, 51, 4));\r\n\r\n\r\n        JButton bt1 = createButton(\"Single-Player\");\r\n        JButton bt2 = createButton(\"Two-Player\");\r\n        JButton bt4 = createButton(\"Help\");\r\n        JButton bt5 = createButton(\"Exit\");\r\n\r\n        bt2.setBackground(new Color(213,144,89));\r\n\r\n        bt4.setSize(149, 81);\r\n        bt4.setBackground(new Color(213,144,89));\r\n\r\n        bt5.setSize(149, 81);\r\n\r\n        bt1.setLocation(99, 164);\r\n        bt1.setActionCommand(\"1\");\r\n        bt1.addActionListener(this);\r\n\r\n        bt2.setLocation(279, 164);\r\n        bt2.setActionCommand(\"2\");\r\n        bt2.addActionListener(this);\r\n\r\n\r\n\r\n        bt4.setLocation(99, 277);\r\n        bt4.setActionCommand(\"4\");\r\n        bt4.addActionListener(this);\r\n\r\n        bt5.setLocation(279, 277);\r\n        bt5.setActionCommand(\"5\");\r\n        bt5.addActionListener(this);\r\n\r\n        panel.add(bt1);\r\n        panel.add(bt2);\r\n\r\n        panel.add(bt4);\r\n        panel.add(bt5);\r\n        panel.add(name);\r\n        panel.add(jl);\r\n        //panel.add(jl1);\r\n\r\n\r\n        this.getContentPane().add(panel);\r\n\r\n    }\r\n\r\n    public void setStr(String str) {\r\n        this.str = str;\r\n    }\r\n\r\n    public String getStr() {\r\n        return str;\r\n    }\r\n\r\n    public JButton createButton(String text){\r\n        JButton btn = new JButton(text);\r\n        btn.setSize(new Dimension(149, 81));\r\n        Font font = new Font(\"Castellar\", Font.BOLD, 13);\r\n        btn.setFont(font);\r\n        btn.setBackground(new Color(163,66,0));\r\n        return btn;\r\n    }\r\n\r\n    @Override\r\n    public void actionPerformed(ActionEvent e) {\r\n        if(e.getActionCommand().equals(\"1\")){\r\n            this.setVisible(false);\r\n            new ChessGameFrame(\"images/bac1.jpg\",\"C:\\\\Users\\\\86131\\\\Desktop\\\\音频素材\\\\gv8rh-mzyvz.wav\", new Color(207,109,60));\r\n        }else if(e.getActionCommand().equals(\"2\")){\r\n            this.setVisible(false);\r\n            new ChessGameFrame(\"images/bac1.jpg\",\"C:\\\\Users\\\\86131\\\\Desktop\\\\音频素材\\\\gv8rh-mzyvz.wav\", new Color(207,109,60));\r\n        }else if(e.getActionCommand().equals(\"4\")){\r\n            new Thread() {\r\n                //重写run方法\r\n                public void run() {\r\n                    //构造命令\r\n                    String cmd = \"cmd.exe /c start \";\r\n\r\n                    //构造本地文件路径或者网页URL\r\n                    //String file = \"http://www.baidu.com\";\r\n                    String file = \"https://jingyan.baidu.com/article/11c17a2c775262f446e39ddc.html\";\r\n\r\n                    try {\r\n                        //执行操作\r\n                        Runtime.getRuntime().exec(cmd + file);\r\n                    } catch (IOException ignore) {\r\n                        //打印异常\r\n                        ignore.printStackTrace();\r\n                    }\r\n                }\r\n            }.start();//启动线程\r\n        }\r\n        else {\r\n            System.exit(0);\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/view/FirstView.java b/src/view/FirstView.java
+--- a/src/view/FirstView.java	
++++ b/src/view/FirstView.java	
+@@ -1,7 +1,4 @@
+ package view;
+-
+-import com.tedu.manager.MusicPlayer;
+-
+ import javax.swing.*;
+ import java.awt.*;
+ import java.awt.event.ActionEvent;
+@@ -11,8 +8,6 @@
+ public class FirstView extends JFrame implements ActionListener {
+ 
+     private String str;
+-
+-
+     public FirstView(){
+         this.setTitle("Chess");
+         this.setSize(550, 500);
+@@ -21,23 +16,6 @@
+         this.setResizable(false);
+         this.getContentPane().setBackground(new Color(88,47,27));
+ 
+-        /*ImageIcon icon=new ImageIcon("images/bac1.jpg");
+-        //Image im=new Image(icon);
+-        //将图片放入label中
+-        JLabel label=new JLabel(icon);
+-        //设置label的大小
+-        label.setBounds(0,0,icon.getIconWidth(),icon.getIconHeight());
+-        //取窗口的第二层，将label放入
+-        this.getLayeredPane().add(label,Integer.MIN_VALUE);
+-        //获取frame的顶层容器,并设置为透明
+-        JPanel j=(JPanel)this.getContentPane();
+-
+-        //j.setOpaque(false);
+-
+-        //必须设置为透明的。否则看不到图片
+-        //panel.setOpaque(false);*/
+-
+-
+         ImageIcon image = new ImageIcon("images/bac1.jpg");
+         Image image1 = image.getImage();
+         Image image2 = image1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
+@@ -45,12 +23,6 @@
+         JLabel jl = new JLabel(trueBack);
+         jl.setBounds(0,0, getWidth(), getHeight());
+ 
+-        /*ImageIcon secondImage = new ImageIcon("images/标题.png");
+-        Image secondImage1 = secondImage.getImage();
+-        Image secondImage2 = secondImage1.getScaledInstance(100,50, Image.SCALE_FAST);
+-        ImageIcon trueName = new ImageIcon(secondImage2);
+-        JLabel jl1 = new JLabel(trueName);
+-        jl1.setBounds(205,100, 100,50);*/
+ 
+         JPanel panel = new JPanel();
+         panel.setLayout(null);
+@@ -99,21 +71,12 @@
+         panel.add(bt5);
+         panel.add(name);
+         panel.add(jl);
+-        //panel.add(jl1);
+ 
+ 
+         this.getContentPane().add(panel);
+ 
+     }
+ 
+-    public void setStr(String str) {
+-        this.str = str;
+-    }
+-
+-    public String getStr() {
+-        return str;
+-    }
+-
+     public JButton createButton(String text){
+         JButton btn = new JButton(text);
+         btn.setSize(new Dimension(149, 81));
+@@ -127,7 +90,7 @@
+     public void actionPerformed(ActionEvent e) {
+         if(e.getActionCommand().equals("1")){
+             this.setVisible(false);
+-            new ChessGameFrame("images/bac1.jpg","C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav", new Color(207,109,60));
++            new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav", new Color(207,109,60));
+         }else if(e.getActionCommand().equals("2")){
+             this.setVisible(false);
+             new ChessGameFrame("images/bac1.jpg","C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav", new Color(207,109,60));
