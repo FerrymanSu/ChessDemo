@@ -7,59 +7,34 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 
 /**
  * 这个类表示游戏过程中的整个游戏界面，是一切的载体
  */
 public class ChessGameFrame extends JFrame implements ActionListener {
-   /* private final int WIDTH;
-    private final int HEIGHT;
-    public final int CHESSBOARD_SIZE;*/
     private GameController gameController;
     private Chessboard chessboard;
 
     private JLabel jl;
-    private String back = "images/bac1.jpg";
-    private Color BGC = new Color(207,109,60);
-    private String BGM = "C:\\Users\\86131\\Desktop\\音频素材\\gv8rh-mzyvz.wav";
+    private String back;
+    private String BGM;
     public MusicPlayer musicPlayer;
     JPanel panel;
-    private JLabel hintLabel = new JLabel("Turn For BLACK");
-
-
-    public int timeRemaining;
+    private JLabel hintLabel = new JLabel("Turn For WHITE");
 
     public String getBack() {
         return back;
-    }
-
-    public Color getBGC() {
-        return BGC;
     }
 
     public String getBGM() {
         return BGM;
     }
 
-    public void setBGC(Color BGC) {
-        this.BGC = BGC;
-    }
-
-    public void setBack(String background) {
-        this.back = background;
-    }
-
-    public void setBGM(String BGM) {
-        this.BGM = BGM;
-    }
-
-
-
-    public ChessGameFrame(String back, String BGM, Color BGC) {
+    public ChessGameFrame(String back, String BGM) {
         setTitle("2022 CS102A Project Demo"); //设置标题
         this.back = back;
-        this.BGC = BGC;
         this.BGM = BGM;
 
         musicPlayer = new MusicPlayer(getBGM());
@@ -100,13 +75,8 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         bt8.setLocation(800, 650);
         bt8.addActionListener(this);
 
-        //panel.add(bt1);
-        //panel.add(bt2);
         panel.add(bt3);
-        //panel.add(bt4);
-        //panel.add(bt5);
         panel.add(bt6);
-        // panel.add(bt7);
         panel.add(bt8);
         panel.add(jl);
 
@@ -121,9 +91,8 @@ public class ChessGameFrame extends JFrame implements ActionListener {
 
         this.add(panel);
         this.setVisible(true);
-
-
     }
+
     public void addHintLabel(){
         this.hintLabel.setFont(new Font("Castellar", Font.BOLD, 20));
         this.hintLabel.setSize(250,60);
@@ -138,14 +107,6 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         gameController = new GameController(chessboard);
         chessboard.setLocation(getWidth()/20, getWidth()/20);
         add(chessboard);
-    }
-
-    private void addLabel() {
-        JLabel statusLabel = new JLabel("Sample label");
-        statusLabel.setLocation(HEIGHT, HEIGHT / 10);
-        statusLabel.setSize(200, 60);
-        statusLabel.setFont(new Font("Castellar", Font.BOLD, 12));
-        add(statusLabel);
     }
 
     private void addSaveButton() {
@@ -212,8 +173,11 @@ public class ChessGameFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        if (e.getActionCommand().equals("3")) {
+            gameController.loadGameFromFile(new File(".\\data\\Initial.txt"));
+        }
     }
+
     public JButton createButton(String text){
         JButton btn = new JButton(text);
         btn.setSize(new Dimension(160, 50));
@@ -228,24 +192,6 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         button.setSize(160,50);
         panel.add(button);
         button.addActionListener(e -> {
-            /*JFileChooser chooser = new JFileChooser();
-            chooser.setMultiSelectionEnabled(false);
-
-            int value = chooser.showOpenDialog(button);
-            if(value == JFileChooser.APPROVE_OPTION){
-                panel.remove(jl);
-                repaint();
-
-                String path = chooser.getSelectedFile().getAbsolutePath();
-
-                ImageIcon image= new ImageIcon(path);
-                Image image1 = image.getImage();
-                Image image2 = image1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
-                ImageIcon trueBack = new ImageIcon(image2);
-                jl = new JLabel(trueBack);
-                jl.setBounds(0,0, getWidth(), getHeight());
-                panel.add(jl);
-            }*/
             JFrame frame = new JFrame("Change BGI");
             frame.setLocation(getWidth()/2, getHeight()/2);
             frame.setSize(300,400);

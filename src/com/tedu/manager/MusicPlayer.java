@@ -4,54 +4,25 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Scanner;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.FloatControl;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class MusicPlayer {
-    // wav文件的路径
-    private File file;
-    // 是否循环播放
+    private final File file;
     private volatile boolean isLoop = false;
-    // 是否正在播放
     private volatile boolean isPlaying;
-    // FloatControl.Type.MASTER_GAIN的值(可用于调节音量)
-    private float newVolumn = 7;
 
     private PlayThread playThread;
 
-    //	public static void main(String[] args) {
-//		try {
-//			MusicPlayer player = new MusicPlayer("F:\\初级软件实训\\CrazyArcade-master\\music\\bgm0.wav");
-//			player.setVolumn(6f).play();
-//			System.out.println("开始播放");
-//
-//			System.out.println("是否暂停？");
-//			Scanner sc = new Scanner(System.in);
-//			int isOver = sc.nextInt();
-//			if (isOver == 1) {
-//				player.over();
-//			}
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
 
     public MusicPlayer(String srcPath) {
         file = new File(srcPath);
     }
 
-    /**
-     * 播放音乐
-     */
     public void play() {
         if (playThread == null) {
             playThread = new PlayThread();
@@ -59,9 +30,6 @@ public class MusicPlayer {
         }
     }
 
-    /**
-     * 结束音乐（并非暂停）
-     */
     public void over() {
         isPlaying = false;
         if (playThread != null) {
@@ -69,37 +37,17 @@ public class MusicPlayer {
         }
     }
 
-    /**
-     * 设置循环播放
-     * @param isLoop
-     * @return	返回当前对象
-     */
     public MusicPlayer setLoop(boolean isLoop) {
         this.isLoop = isLoop;
         return this;
     }
 
-    /**
-     * -80.0~6.0206测试,越小音量越小
-     * @param newVolumn
-     * @return	返回当前对象
-     */
-    public MusicPlayer setVolumn(float newVolumn) {
-        this.newVolumn = newVolumn;
-        return this;
-    }
-
-    /**
-     * 异步播放线程
-     */
     private class PlayThread extends Thread {
 
         @Override
         public void run() {
             isPlaying = true;
             do {
-//				isPlaying = true;
-
                 SourceDataLine sourceDataLine = null;
                 BufferedInputStream bufIn = null;
                 AudioInputStream audioIn = null;
@@ -111,11 +59,11 @@ public class MusicPlayer {
                     sourceDataLine = AudioSystem.getSourceDataLine(format);
                     sourceDataLine.open();
                     // 必须open之后
-                    if (newVolumn != 7) {
+                    // FloatControl.Type.MASTER_GAIN的值(可用于调节音量)
+                    float newVolume = 7;
+                    if (newVolume != 7) {
                         FloatControl control = (FloatControl) sourceDataLine.getControl(FloatControl.Type.MASTER_GAIN);
-//						System.out.println(control.getMaximum());
-//						System.out.println(control.getMinimum());
-                        control.setValue(newVolumn);
+                        control.setValue(newVolume);
                     }
 
                     sourceDataLine.start();
@@ -129,7 +77,6 @@ public class MusicPlayer {
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-
                     if (sourceDataLine != null) {
                         sourceDataLine.drain();
                         sourceDataLine.close();
@@ -148,6 +95,4 @@ public class MusicPlayer {
             } while (isPlaying && isLoop);
         }
     }
-
-
 }
