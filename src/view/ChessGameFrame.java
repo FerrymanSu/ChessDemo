@@ -99,13 +99,9 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         bt8.setLocation(800, 650);
         bt8.addActionListener(this);
 
-        //panel.add(bt1);
-        //panel.add(bt2);
+
         panel.add(bt3);
-        //panel.add(bt4);
-        //panel.add(bt5);
         panel.add(bt6);
-        // panel.add(bt7);
         panel.add(bt8);
         panel.add(jl);
 
