@@ -25,12 +25,21 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
     private boolean skip;
     private boolean mouseEnter;
     protected ChessComponent[][] chessComponents;
+    private Color color1;
+    private Color color2;
 
-
-    public void setColor(Color[] color){
-        BACKGROUND_COLORS = color;
+    public void setColor1(Color color1) {
+        this.color1 = color1;
     }
 
+    public void setColor2(Color color2) {
+        this.color2 = color2;
+    }
+
+    public void setColor(Color color1, Color color2){
+        BACKGROUND_COLORS[0] = color1;
+        BACKGROUND_COLORS[1] = color2;
+    }
 
     protected ChessComponent(ChessboardPoint chessboardPoint, Point location, ChessColor chessColor, ClickController clickController, int size) {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);

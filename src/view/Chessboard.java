@@ -24,10 +24,11 @@ public class Chessboard extends JComponent {
     public KingChessComponent whiteKing;
     public KingChessComponent blackKing;
     private JLabel hintLabel;
+    private JLabel daoJiShi;
 
-
-    private Color color1;
-    private Color color2;
+    /*public void setDaoJiShi(JLabel daJiShi) {
+        this.daoJiShi = daJiShi;
+    }*/
 
     public void setHintLabel(JLabel hintLabel) {
         this.hintLabel = hintLabel;
@@ -64,6 +65,14 @@ public class Chessboard extends JComponent {
             initPawnOnBoard(1, i, ChessColor.BLACK);
             initPawnOnBoard(CHESSBOARD_SIZE - 2, i, ChessColor.WHITE);
         }
+    }
+    public void change(Color color1, Color color2){
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                chessComponents[i][j].setColor(color1, color2);
+            }
+        }
+        repaint();
     }
 
     public ChessComponent[][] getChessComponents() {

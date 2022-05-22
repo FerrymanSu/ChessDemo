@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d48bc99d-f5be-46c8-91d2-d457e0ab2e5f" name="变更" comment="Initial commit">
-      <change afterPath="$PROJECT_DIR$/data/Initial.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/_2022_5_22_10_55____.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/_2022_5_22_10_55____.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/tedu/manager/MusicPlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/tedu/manager/MusicPlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model/ChessComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/model/ChessComponent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/view/ChessGameFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/ChessGameFrame.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/view/FirstView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/FirstView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/Chessboard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/Chessboard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/Time.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/Time.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +43,6 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="29Q4n14XPhmuMObgVxhkGkYktZQ" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -55,16 +52,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/data" />
-    <property name="project.structure.last.edited" value="项目" />
-    <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.0" />
-    <property name="settings.editor.selected.configurable" value="File.Encoding" />
-  </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\ChessDemo\data" />
-    </key>
+    <property name="last_opened_file_path" value="$USER_HOME$/Desktop/proj" />
   </component>
   <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -96,7 +84,21 @@
       <option name="project" value="LOCAL" />
       <updated>1653188405213</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Initial commit">
+      <created>1653189991970</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1653189991970</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Initial commit">
+      <created>1653190629951</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1653190629951</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
