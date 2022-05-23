@@ -40,6 +40,12 @@ public class BishopChessComponent extends ChessComponent {
     public BishopChessComponent(ChessboardPoint chessboardPoint, Point location, ChessColor chessColor, ClickController clickController, int size) {
         super(chessboardPoint, location, chessColor, clickController, size);
         initiateBishopImage(chessColor);
+        if (chessColor == ChessColor.BLACK) {
+            this.name = 'B';
+        }
+        else {
+            this.name = 'b';
+        }
     }
 
     @Override
@@ -89,12 +95,5 @@ public class BishopChessComponent extends ChessComponent {
         super.paintComponent(g);
         g.drawImage(bishopImage, 0, 0, getWidth() , getHeight(), this);
         g.setColor(Color.BLACK);
-        if (chessColor == ChessColor.BLACK) {
-            this.name = 'B';
-        }
-        else {
-            this.name = 'b';
-        }
     }
-
 }

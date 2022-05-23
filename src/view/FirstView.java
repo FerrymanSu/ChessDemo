@@ -1,5 +1,6 @@
 package view;
 
+import AI.AILevel;
 import com.tedu.manager.MusicPlayer;
 
 import javax.swing.*;
@@ -7,6 +8,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Random;
 
 public class FirstView extends JFrame implements ActionListener {
 
@@ -82,14 +84,6 @@ public class FirstView extends JFrame implements ActionListener {
 
     }
 
-    public void setStr(String str) {
-        this.str = str;
-    }
-
-    public String getStr() {
-        return str;
-    }
-
     public JButton createButton(String text){
         JButton btn = new JButton(text);
         btn.setSize(new Dimension(149, 81));
@@ -103,10 +97,31 @@ public class FirstView extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getActionCommand().equals("1")){
             this.setVisible(false);
-            new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav");
+            Object[] level = {"Random", "Greedy", "Simple", "Hard"};
+            int i = JOptionPane.showOptionDialog(null, "请选择难度:","人机对战",
+                    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,level,level[0]);
+
+            switch (i) {
+                case 0 -> {
+                    new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav",true, AILevel.Random);
+                    System.out.println("Random");
+                }
+                case 1 -> {
+                    new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav",true, AILevel.Greedy);
+                    System.out.println("Greedy");
+                }
+                case 2 -> {
+                    new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav",true, AILevel.Simple);
+                    System.out.println("Simple");
+                }
+                case 3 ->{
+                    new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav",true, AILevel.Hard);
+                    System.out.println("Hard");
+                }
+            }
         }else if(e.getActionCommand().equals("2")){
             this.setVisible(false);
-            new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav");
+            new ChessGameFrame("images/bac1.jpg",".\\Music\\gv8rh-mzyvz.wav",false, null);
         }else if(e.getActionCommand().equals("4")){
             new Thread() {
                 //重写run方法

@@ -7,7 +7,7 @@ import javax.swing.Timer;
 
 public class Time {
     private JLabel DaoJiShi;
-    private int leftTime = 60;
+    private int leftTime = 15;
     Timer countDown;
     private Chessboard chessboard;
 
@@ -17,8 +17,11 @@ public class Time {
         this.chessboard = chessboard;
         countDown = new Timer(1000, new countDownListener());
     }
+    public void setTime() {
+        chessboard.setTime(this);
+    }
     public void reset(){
-        leftTime = 60;
+        leftTime = 15;
     }
     public void start(){
         countDown.start();

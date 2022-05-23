@@ -1,6 +1,8 @@
 package view;
 
 
+import AI.AILevel;
+import AI.ChessAI;
 import com.tedu.manager.MusicPlayer;
 import controller.GameController;
 import model.*;
@@ -8,6 +10,7 @@ import controller.ClickController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,33 +18,26 @@ import java.util.List;
 public class Chessboard extends JComponent {
     private static final int CHESSBOARD_SIZE = 8;
     private final ChessComponent[][] chessComponents = new ChessComponent[CHESSBOARD_SIZE][CHESSBOARD_SIZE];
+    private final boolean AI;
+    private final ChessAI chessAI;
     private ChessColor currentColor = ChessColor.WHITE;
     private int round;
-    private final ClickController clickController = new ClickController(this);
+    private final ClickController clickController;
     private GameController gameController;
     private final int CHESS_SIZE;
     protected ChessColor winner;
     public KingChessComponent whiteKing;
     public KingChessComponent blackKing;
     private JLabel hintLabel;
-    private JLabel daoJiShi;
+    private Time time;
 
-    /*public void setDaoJiShi(JLabel daJiShi) {
-        this.daoJiShi = daJiShi;
-    }*/
-
-    public void setHintLabel(JLabel hintLabel) {
-        this.hintLabel = hintLabel;
-    }
-
-
-    public Chessboard(int width, int height) {
+    public Chessboard(int width, int height, boolean AI, AILevel level) {
         setLayout(null); // Use absolute layout.
         setSize(width, height);
-
+        this.AI = AI;
+        this.clickController = new ClickController(this);
         CHESS_SIZE = width / 8;
         System.out.printf("chessboard size = %d, chess size = %d\n", width, CHESS_SIZE);
-
         round = 0;
         initiateEmptyChessboard();
 
@@ -65,6 +61,7 @@ public class Chessboard extends JComponent {
             initPawnOnBoard(1, i, ChessColor.BLACK);
             initPawnOnBoard(CHESSBOARD_SIZE - 2, i, ChessColor.WHITE);
         }
+        this.chessAI = new ChessAI(this, level);
     }
     public void change(Color color1, Color color2){
         for (int i = 0; i < 8; i++) {
@@ -95,12 +92,36 @@ public class Chessboard extends JComponent {
         this.round = round;
     }
 
+    public ClickController getClickController() {
+        return clickController;
+    }
+
     public GameController getGameController() {
         return gameController;
     }
 
     public void setGameController(GameController gameController) {
         this.gameController = gameController;
+    }
+
+    public boolean isAI() {
+        return AI;
+    }
+
+    public ChessAI getMyAI() {
+        return chessAI;
+    }
+
+    public void setTime(Time time) {
+        this.time = time;
+    }
+
+    public Time getTime() {
+        return time;
+    }
+
+    public void setHintLabel(JLabel hintLabel) {
+        this.hintLabel = hintLabel;
     }
 
     public void putChessOnBoard(ChessComponent chessComponent) {
@@ -197,6 +218,19 @@ public class Chessboard extends JComponent {
     }
 
     public void loadGame(List<String> chessData) {
+        boolean correct = true;
+        if (chessData.size() != 9) {
+            correct = false;
+            JOptionPane.showMessageDialog(null,"棋盘格式有误或缺少下一次行棋方！","文件读取异常",JOptionPane.ERROR_MESSAGE);
+        }
+        for (int i = 0; i < 8; i++) {
+            String str = chessData.get(i);
+            if (str.length() != 8 && correct) {
+                correct = false;
+                JOptionPane.showMessageDialog(null,"棋盘格式有误！","文件读取异常",JOptionPane.ERROR_MESSAGE);
+                break;
+            }
+        }
         initiateEmptyChessboard();
         for (int i = 0; i < chessData.size() - 1; i++){
             for (int j = 0; j < 8; j++){
@@ -213,16 +247,37 @@ public class Chessboard extends JComponent {
                     case 'r' -> initRookOnBoard(i, j, ChessColor.WHITE);
                     case 'P' -> initPawnOnBoard(i, j, ChessColor.BLACK);
                     case 'p' -> initPawnOnBoard(i, j, ChessColor.WHITE);
+                    case '_' -> {}
+                    default -> {
+                        if (correct) {
+                            correct = false;
+                            JOptionPane.showMessageDialog(null,"棋子形式有误！","文件读取异常",JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
                 }
             }
         }
         this.repaint();
         if (chessData.get(chessData.size() - 1).equals("w")) {
             currentColor = ChessColor.WHITE;
+            hintLabel.setText("Turn For WHITE");
         }
-        else
+        else if (chessData.get(chessData.size() - 1).equals("b")){
             currentColor = ChessColor.BLACK;
+            hintLabel.setText("Turn For BLACK");
+        }
+
+        else {
+            if (correct){
+                correct = false;
+                JOptionPane.showMessageDialog(null,"下一步行棋方有误！","文件读取异常",JOptionPane.ERROR_MESSAGE);
+
+            }
+        }
         this.checkCheckmated();
+        if (!correct) {
+            gameController.loadGameFromFile(new File(".\\data\\Initial.txt"));
+        }
     }
 
     public void pawnTurn (ChessComponent chess , int n) {
@@ -269,6 +324,9 @@ public class Chessboard extends JComponent {
             }
         }
 
+    }
+    public boolean checkAITurn() {
+        return currentColor == ChessColor.BLACK && AI;
     }
 
     public boolean checkGameOver() {

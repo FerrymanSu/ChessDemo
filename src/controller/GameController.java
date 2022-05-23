@@ -3,7 +3,6 @@ package controller;
 import view.Chessboard;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -35,29 +34,35 @@ public class GameController {
 
     public void loadGameFromFile(File file) {
         String Path = file.getPath();
-        BufferedReader reader = null;
-        List<String> chessData = new ArrayList<>();
-        try {
-            FileInputStream fileInputStream = new FileInputStream(Path);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
-            reader = new BufferedReader(inputStreamReader);
-            String tempString;
-            while ((tempString = reader.readLine()) != null){
-                chessData.add(tempString);
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e){
-                    e.printStackTrace();
+        String str = Path.substring(Path.length() - 3);
+        if (str.equals("txt")){
+            BufferedReader reader = null;
+            List<String> chessData = new ArrayList<>();
+            try {
+                FileInputStream fileInputStream = new FileInputStream(Path);
+                InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
+                reader = new BufferedReader(inputStreamReader);
+                String tempString;
+                while ((tempString = reader.readLine()) != null){
+                    chessData.add(tempString);
+                }
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e){
+                        e.printStackTrace();
+                    }
                 }
             }
+            chessboard.loadGame(chessData);
         }
-        chessboard.loadGame(chessData);
+        else {
+            JOptionPane.showMessageDialog(null,"文件格式错误！","文件读取异常",JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void saveGameToFile(List<String> chessData) {

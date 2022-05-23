@@ -1,5 +1,7 @@
 package model;
 
+import AI.ChessAI;
+import view.Chessboard;
 import view.ChessboardPoint;
 import controller.ClickController;
 
@@ -25,16 +27,6 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
     private boolean skip;
     private boolean mouseEnter;
     protected ChessComponent[][] chessComponents;
-    private Color color1;
-    private Color color2;
-
-    public void setColor1(Color color1) {
-        this.color1 = color1;
-    }
-
-    public void setColor2(Color color2) {
-        this.color2 = color2;
-    }
 
     public void setColor(Color color1, Color color2){
         BACKGROUND_COLORS[0] = color1;
@@ -104,7 +96,9 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
         return mouseEnter;
     }
 
-
+    public char Name() {
+        return name;
+    }
 
     public void setMouseEnter(boolean mouseEnter) {
         this.mouseEnter = mouseEnter;
@@ -132,18 +126,36 @@ public abstract class ChessComponent extends JComponent implements Cloneable{
     @Override
     protected void processMouseEvent(MouseEvent e) {
         super.processMouseEvent(e);
-
-        if (e.getID() == MouseEvent.MOUSE_PRESSED) {
-            System.out.printf("Click [%d,%d]\n", chessboardPoint.getX(), chessboardPoint.getY());
-            clickController.onClick(this);
+        Chessboard chessboard = clickController.getChessboard();
+        boolean AI = chessboard.isAI();
+        if (!AI){
+            if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+                System.out.printf("Click [%d,%d]\n", chessboardPoint.getX(), chessboardPoint.getY());
+                clickController.onClick(this);
+            }
+            if (e.getID() == MouseEvent.MOUSE_ENTERED) {
+                setMouseEnter(true);
+                this.repaint();
+            }
+            if (e.getID() == MouseEvent.MOUSE_EXITED) {
+                setMouseEnter(false);
+                this.repaint();
+            }
         }
-        if (e.getID() == MouseEvent.MOUSE_ENTERED) {
-            setMouseEnter(true);
-            this.repaint();
-        }
-        if (e.getID() == MouseEvent.MOUSE_EXITED) {
-            setMouseEnter(false);
-            this.repaint();
+        else {
+            if (chessboard.getCurrentColor() == ChessColor.WHITE) {
+                if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+                    clickController.onClick(this);
+                }
+                if (e.getID() == MouseEvent.MOUSE_ENTERED) {
+                    setMouseEnter(true);
+                    this.repaint();
+                }
+                if (e.getID() == MouseEvent.MOUSE_EXITED) {
+                    setMouseEnter(false);
+                    this.repaint();
+                }
+            }
         }
 
     }

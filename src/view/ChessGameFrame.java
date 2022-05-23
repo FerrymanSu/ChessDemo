@@ -1,30 +1,30 @@
 package view;
 
+import AI.AILevel;
 import com.tedu.manager.MusicPlayer;
 import controller.GameController;
-import model.ChessColor;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * 这个类表示游戏过程中的整个游戏界面，是一切的载体
  */
 public class ChessGameFrame extends JFrame implements ActionListener {
     private GameController gameController;
-    private Chessboard chessboard;
+    private final boolean AI;
+    private final AILevel level;
 
     private JLabel jl;
-    private String back;
-    private String BGM;
+    private final String back;
+    private final String BGM;
     public MusicPlayer musicPlayer;
     JPanel panel;
-    private JLabel hintLabel = new JLabel("Turn For WHITE");
-    private JLabel daoJiShi = new JLabel("TimeLeft: 60 s");
+    private final JLabel hintLabel = new JLabel("Turn For WHITE");
+    private final JLabel daoJiShi = new JLabel("TimeLeft: 15 s");
+    Chessboard chessboard;
 
 
 
@@ -36,11 +36,12 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         return BGM;
     }
 
-    public ChessGameFrame(String back, String BGM) {
+    public ChessGameFrame(String back, String BGM , boolean AI , AILevel level) {
         setTitle("2022 CS102A Project Demo"); //设置标题
         this.back = back;
-        this.BGC = BGC;
         this.BGM = BGM;
+        this.AI = AI;
+        this.level = level;
 
         musicPlayer = new MusicPlayer(getBGM());
         musicPlayer.play();
@@ -62,14 +63,10 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         panel = new JPanel();
         panel.setLayout(null);
 
-
-
-
-
         panel.add(jl);
+        addChessboard();
         addDaoJiShi();
         addRestartButton();
-        addChessboard();
         addHintLabel();
         addChangeBGI();
         addSaveButton();
@@ -83,12 +80,24 @@ public class ChessGameFrame extends JFrame implements ActionListener {
 
 
     }
+
+    private void addChessboard() {
+        chessboard = new Chessboard(650, 650, AI, level);
+        chessboard.setHintLabel(hintLabel);
+        gameController = new GameController(chessboard);
+        chessboard.setLocation(getWidth()/20, getHeight()/20);
+        add(chessboard);
+    }
+
     public void addDaoJiShi(){
         this.daoJiShi.setFont(new Font("Castellar", Font.BOLD, 23));
         this.daoJiShi.setSize(250, 60);
         this.daoJiShi.setLocation(760,170);
         this.daoJiShi.setForeground(new Color(246, 231, 215));
         Time time = new Time(daoJiShi, chessboard);
+        chessboard.setTime(time);
+        chessboard.getClickController().setTime(time);
+        time.setTime();
         time.start();
         add(daoJiShi);
     }
@@ -101,13 +110,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         add(hintLabel);
     }
 
-    private void addChessboard() {
-        chessboard = new Chessboard(650,650);
-        chessboard.setHintLabel(hintLabel);
-        gameController = new GameController(chessboard);
-        chessboard.setLocation(getWidth()/20, getHeight()/20);
-        add(chessboard);
-    }
+
     public void addRestartButton(){
         JButton bt3 = createButton("Restart");
         bt3.setActionCommand("3");
@@ -116,7 +119,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         add(bt3);
 
         bt3.addActionListener(e->{
-
+            gameController.loadGameFromFile(new File("./data/Initial.txt"));
         });
     }
 
@@ -137,9 +140,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         button.setLocation(800, 520);
         add(button);
 
-        button.addActionListener(e -> {
-            gameController.showFileOpenDialog(this);
-        });
+        button.addActionListener(e -> gameController.showFileOpenDialog(this));
     }
 
     private void addBackButton() {
@@ -151,9 +152,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         button.setFont(new Font("Castellar", Font.BOLD, 14));
         add(button);
 
-        button.addActionListener(e -> {
-            gameController.stepBack();
-        });
+        button.addActionListener(e -> gameController.stepBack());
     }
 
     private void addForwardButton() {
@@ -165,18 +164,12 @@ public class ChessGameFrame extends JFrame implements ActionListener {
         button.setFont(new Font("Castellar", Font.BOLD, 14));
         add(button);
 
-        button.addActionListener(e -> {
-            gameController.stepForward();
-        });
+        button.addActionListener(e -> gameController.stepForward());
     }
 
 
     private void doShutDownWork(){
-        Runtime.getRuntime().addShutdownHook(new Thread(){
-            public void run(){
-                gameController.deleteFileNotSaved();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> gameController.deleteFileNotSaved()));
     }
 
     @Override
@@ -231,7 +224,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
                 panel.remove(jl);
                 repaint();
 
-                ImageIcon picture= new ImageIcon("C:\\Users\\86131\\Desktop\\proj素材\\back3.jpg");
+                ImageIcon picture= new ImageIcon(".\\images\\back3.jpg");
                 Image picture1 = picture.getImage();
                 Image picture2 = picture1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
                 ImageIcon trueP = new ImageIcon(picture2);
@@ -254,7 +247,7 @@ public class ChessGameFrame extends JFrame implements ActionListener {
                 panel.remove(jl);
                 repaint();
 
-                ImageIcon picture= new ImageIcon("C:\\Users\\86131\\Desktop\\proj素材\\back2.jpg");
+                ImageIcon picture= new ImageIcon(".\\images\\back2.jpg");
                 Image picture1 = picture.getImage();
                 Image picture2 = picture1.getScaledInstance(getWidth(),getHeight(), Image.SCALE_FAST);
                 ImageIcon trueP = new ImageIcon(picture2);

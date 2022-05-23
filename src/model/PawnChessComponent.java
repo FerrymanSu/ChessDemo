@@ -78,8 +78,8 @@ public class PawnChessComponent extends ChessComponent {
                         && chessboard[X - 1][Y - 1].getChessColor() != chessColor){
                     pointList.add(chessboard[X - 1][Y - 1].getChessboardPoint());
                 }
-                if (Y < 7 && !(chessboard[X - 1][Y + 1] instanceof EmptySlotComponent
-                        && chessboard[X - 1][Y + 1].getChessColor() != chessColor)){
+                if (Y < 7 && !(chessboard[X - 1][Y + 1] instanceof EmptySlotComponent)
+                        && chessboard[X - 1][Y + 1].getChessColor() != chessColor){
                     pointList.add(chessboard[X - 1][Y + 1].getChessboardPoint());
                 }
                 if (Y > 0 && X == 3 && chessboard[3][Y - 1] instanceof PawnChessComponent

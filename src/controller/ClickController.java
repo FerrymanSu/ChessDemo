@@ -4,9 +4,9 @@ package controller;
 import model.*;
 import view.Chessboard;
 import view.ChessboardPoint;
+import view.Time;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 
 public class ClickController {
@@ -15,6 +15,7 @@ public class ClickController {
     private ArrayList<ChessboardPoint> points;
     private ChessComponent first;
     private PawnChessComponent passPawn;
+    private Time time;
 
     public ClickController(Chessboard chessboard) {
         this.chessboard = chessboard;
@@ -26,7 +27,12 @@ public class ClickController {
         return chessboard;
     }
 
+    public void setTime(Time time) {
+        this.time = time;
+    }
+
     public void onClick(ChessComponent chessComponent) {
+        System.out.printf("Click [%d,%d]\n", chessComponent.getChessboardPoint().getX(), chessComponent.getChessboardPoint().getY());
         if (first == null) {
             if (handleFirst(chessComponent)) {
                 chessComponent.setSelected(true);
@@ -122,11 +128,19 @@ public class ClickController {
                 first.setSelected(false);
                 chessboard.swapChessComponents(first, chessComponent);
                 chessboard.swapColor();
+                time.reset();
+                time.start();
 
                 if (first instanceof PawnChessComponent && ((PawnChessComponent) first).checkTurn()) {
-                    Object[] options = {"Queen", "Bishop", "Knight", "Rook"};
-                    int turn = JOptionPane.showOptionDialog(null,"请选择升变成:", "升变!",
-                            JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+                    int turn;
+                    if (!chessboard.isAI() || first.getChessColor() == ChessColor.WHITE) {
+                        Object[] options = {"Queen", "Bishop", "Knight", "Rook"};
+                        turn = JOptionPane.showOptionDialog(null,"请选择升变成:", "升变!",
+                                JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+                    }
+                    else {
+                        turn = 0;
+                    }
                     chessboard.pawnTurn(first,turn);
                 }
 
@@ -145,7 +159,16 @@ public class ClickController {
                 chessboard.getGameController().saveGameToFile(chessboard.toStringList());
 
                 if (chessboard.checkGameOver()){
-                    System.out.println(chessboard.getWinner());
+                    JOptionPane.showMessageDialog(null,"The winner is Player " + chessboard.getWinner() + "!");
+                }
+                else if(chessboard.checkAITurn()) {
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            chessboard.getMyAI().playChess();
+                        }
+                    });
+                    thread.start();
                 }
             }
         }
